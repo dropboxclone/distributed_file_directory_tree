@@ -1,0 +1,27 @@
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile "com.hazelcast:hazelcast:3.5.3"
+    compile "org.json:json:20150729"
+    //compile 'com.googlecode.json-simple:json-simple:1.1.1'
+}
+
+jar {
+    baseName = 'hazelcast-dfs'
+    version =  '0.1.0'
+}
+
+apply plugin: 'application'
+
+mainClassName = 'dfs.Demo'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.8'
+}
