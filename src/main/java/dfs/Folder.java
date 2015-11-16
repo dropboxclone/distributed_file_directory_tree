@@ -44,6 +44,24 @@ public class Folder implements FileOrFolder{
 		return true;
 	}
 
+	/*
+	public boolean createFile(String fname){
+		Map<String,FileOrFolder> contents = instance.getMap(path);
+		if(contents.containsKey(fname))
+			return false;
+		File nFile = new File(fname,path+"/"+fname);
+		contents.put(fname,nFile);
+		return true;
+	}
+	*/
+	public void getFileFromDisk(String fname){
+		
+	}
+
+	public Map<String,FileOrFolder> getContents(){
+		return instance.getMap(path);
+	}
+
 	// public boolean equals(Object obj){
 	// 	if(obj == this)
 	// 		return true;
