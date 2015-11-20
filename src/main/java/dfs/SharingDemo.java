@@ -2,14 +2,16 @@ package dfs;
 
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
-import java.io;
+//import java.io;
+import java.util.Scanner;
+import java.io.IOException;
 
 public class SharingDemo{
-	public static void copyFolder(Folder f){
+	public static void copyFolder(Folder f) throws IOException{
 		for(FileOrFolder sub : f.getContents().values()){
 			if(sub instanceof File){
-				File f = (File) sub;
-				Files.copy(f.getByteArrayStream(),FileSystems.getDefault().getPath(f.getPath()));
+				File subFile = (File) sub;
+				Files.copy(subFile.getByteArrayStream(),FileSystems.getDefault().getPath(f.getPath()));
 			}
 			else{
 				Folder subFolder = (Folder) sub;
@@ -33,13 +35,13 @@ public class SharingDemo{
 	// 		}
 	// 	}
 	// }
-	public static void main(String[] args){
+	public static void main(String[] args) throws IOException{
 		Folder root = new Folder(".",".");
 		copyFolder(root);
 		Scanner reader = new Scanner(System.in);
 		while(true){
 			reader.nextLine();
 			Folder.syncFolder(".",".");
-		};
+		}
 	}
 }

@@ -4,15 +4,26 @@ import org.json.JSONObject;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 public class File implements FileOrFolder{
 	String name;
 	String path;
 	byte[] contents;
+	public File(String n, String p, byte[] c){
+		name = n;
+		path = p;
+		contents = c;
+	}
 	public File(String n, String p){
 		name = n;
 		path = p;
-		contents = Files.readAllBytes(FileSystems.getDefault().getPath(path));
+		try{
+			contents = Files.readAllBytes(FileSystems.getDefault().getPath(path));
+		}
+		catch(Exception e){
+			System.out.println("Something bad happened!\n" + e);
+		}
 	}
 	public ByteArrayInputStream getByteArrayStream(){
 		return new ByteArrayInputStream(contents);

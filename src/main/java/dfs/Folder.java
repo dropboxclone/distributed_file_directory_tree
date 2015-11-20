@@ -7,7 +7,7 @@ import com.hazelcast.config.Config;
 import java.util.Map;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
-import java.io;
+//import java.io;
 
 public class Folder implements FileOrFolder{
 	String name;
@@ -66,15 +66,26 @@ public class Folder implements FileOrFolder{
 	}
 	*/
 	public void getFileFromDisk(String fname){
-		byte[] fileContents = Files.readAllBytes(FileSystems.getDefault().getPath(path,fname));
-		Map<String,FileOrFolder> folderContents = instance.getMap(path);
-		folderContents.put(fname,new File(fname,path+"/"+fname,fileContents));
+		try{
+			byte[] fileContents = Files.readAllBytes(FileSystems.getDefault().getPath(path,fname));
+			Map<String,FileOrFolder> folderContents = instance.getMap(path);
+			FileOrFolder reqFile = new File(fname,path+"/"+fname,fileContents);
+			folderContents.put(fname,reqFile);
+		}
+		catch(Exception e){
+			System.out.println("Something bad happened!\n" + e);
+		}
 	}
 
 	public static void getFileFromDiskTo(String destPath, String fname){
-		byte[] fileContents = Files.readAllBytes(FileSystems.getDefault().getPath(destPath,fname));
-		Map<String,FileOrFolder> folderContents = instance.getMap(destPath);
-		folderContents.put(fname,new File(fname,destPath+"/"+fname,fileContents));
+		try{
+			byte[] fileContents = Files.readAllBytes(FileSystems.getDefault().getPath(destPath,fname));
+			Map<String,FileOrFolder> folderContents = instance.getMap(destPath);
+			folderContents.put(fname,new File(fname,destPath+"/"+fname,fileContents));
+		}
+		catch(Exception e){
+			System.out.println("Something bad happened!\n" + e);
+		}
 	}
 
 	public Map<String,FileOrFolder> getContents(){
@@ -82,8 +93,8 @@ public class Folder implements FileOrFolder{
 	}
 
 	public static void syncFolder(String syncSourceDirectoryPath, String syncDestPath){
-		io.File top = new io.File(syncSourceDirectoryPath);
-		for(io.File sub : top.listFiles()){
+		java.io.File top = new java.io.File(syncSourceDirectoryPath);
+		for(java.io.File sub : top.listFiles()){
 			boolean contains = instance.getMap(syncDestPath).containsKey(sub.getName()); 
 			if(!sub.isDirectory()){
 				if(!contains)
