@@ -1,4 +1,8 @@
-apply plugin: 'java'
+plugins {
+  id 'java' // or 'groovy' Must be explicitly applied
+  id 'application'
+  id 'com.github.johnrengelman.shadow' version '1.2.2'
+}
 
 repositories {
     mavenCentral()
@@ -13,14 +17,7 @@ dependencies {
     //compile 'com.googlecode.json-simple:json-simple:1.1.1'
 }
 
-jar {
-    baseName = 'hazelcast-dfs'
-    version =  '0.1.0'
-}
-
-apply plugin: 'application'
-
-mainClassName = 'dfs.Demo'
+mainClassName = 'dfs.SharingDemo'
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.8'

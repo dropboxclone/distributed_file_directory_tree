@@ -11,7 +11,7 @@ public class SharingDemo{
 		for(FileOrFolder sub : f.getContents().values()){
 			if(sub instanceof File){
 				File subFile = (File) sub;
-				Files.copy(subFile.getByteArrayStream(),FileSystems.getDefault().getPath(f.getPath()));
+				Files.copy(subFile.getByteArrayStream(),FileSystems.getDefault().getPath(f.getPath()+"/"+subFile.getName()));
 			}
 			else{
 				Folder subFolder = (Folder) sub;
@@ -38,10 +38,13 @@ public class SharingDemo{
 	public static void main(String[] args) throws IOException{
 		Folder root = new Folder(".",".");
 		copyFolder(root);
-		Scanner reader = new Scanner(System.in);
-		while(true){
-			reader.nextLine();
-			Folder.syncFolder(".",".");
-		}
+		System.out.println("Copied root directory! Root : \n" + root);
+		Folder.syncFolder(".",".");
+		System.out.println("Synced with file directory root! Root : \n" + root);
+		// Scanner reader = new Scanner(System.in);
+		// while(true){
+		// 	reader.nextLine();
+		// 	Folder.syncFolder(".",".");
+		// }
 	}
 }
