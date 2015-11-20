@@ -5,6 +5,9 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.config.Config;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.FileSystems;
+import java.io;
 
 public class Folder implements FileOrFolder{
 	String name;
@@ -43,6 +46,14 @@ public class Folder implements FileOrFolder{
 		contents.put(fname,subFolder);
 		return true;
 	}
+	public static boolean createSubFolderTo(String destPath,String fname){
+		Map<String,FileOrFolder> contents = instance.getMap(destPath);
+		if(contents.containsKey(fname))
+			return false;
+		FileOrFolder subFolder = new Folder(fname,destPath+"/"+fname);
+		contents.put(fname,subFolder);
+		return true;
+	}
 
 	/*
 	public boolean createFile(String fname){
@@ -55,12 +66,40 @@ public class Folder implements FileOrFolder{
 	}
 	*/
 	public void getFileFromDisk(String fname){
-		
+		byte[] fileContents = Files.readAllBytes(FileSystems.getDefault().getPath(path,fname));
+		Map<String,FileOrFolder> folderContents = instance.getMap(path);
+		folderContents.put(fname,new File(fname,path+"/"+fname,fileContents));
+	}
+
+	public static void getFileFromDiskTo(String destPath, String fname){
+		byte[] fileContents = Files.readAllBytes(FileSystems.getDefault().getPath(destPath,fname));
+		Map<String,FileOrFolder> folderContents = instance.getMap(destPath);
+		folderContents.put(fname,new File(fname,destPath+"/"+fname,fileContents));
 	}
 
 	public Map<String,FileOrFolder> getContents(){
 		return instance.getMap(path);
 	}
+
+	public static void syncFolder(String syncSourceDirectoryPath, String syncDestPath){
+		io.File top = new io.File(syncSourceDirectoryPath);
+		for(io.File sub : top.listFiles()){
+			boolean contains = instance.getMap(syncDestPath).containsKey(sub.getName()); 
+			if(!sub.isDirectory()){
+				if(!contains)
+					getFileFromDiskTo(syncDestPath,sub.getName());
+					//syncDest.getFileFromDisk(sub.getName());
+			}
+			else{
+				if(!contains){
+					//syncDest.createSubFolder(sub.getName());
+					createSubFolderTo(syncDestPath,sub.getName());
+				}
+				syncFolder(sub.getPath(),syncDestPath+"/"+sub.getName());
+			}
+		}
+	}
+
 
 	// public boolean equals(Object obj){
 	// 	if(obj == this)
