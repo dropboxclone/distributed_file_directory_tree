@@ -14,10 +14,14 @@ public class Folder implements FileOrFolder{
 	String path;
 	final static HazelcastInstance instance = Hazelcast.newHazelcastInstance(new Config());
 	//Map<String,FileOrFolder> contents;
+
+	ITopic<Action> actions;
 	public Folder(String n, String p){
 		name = n;
 		path = p;
 		Map<String,FileOrFolder> contents = instance.getMap(path);
+		actions = instance.getTopic("Actions");
+		actions.addMessageLinstener(new MsgAction(instance));
 	}
 	public String getName(){ return name; }
 	public String getPath(){ return path; }
