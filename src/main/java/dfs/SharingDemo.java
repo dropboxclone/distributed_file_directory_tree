@@ -44,6 +44,11 @@ public class SharingDemo{
 		System.out.println("Copied root directory! Root : \n" + root);
 		Folder.syncFolder(".",".");
 		System.out.println("Synced with file directory root! Root : \n" + root);
+
+		
+		System.out.println("[Main] Initializing Directory Watching");
+		root.initiateDirectoryWatching();
+
 		// Scanner reader = new Scanner(System.in);
 		// while(true){
 		// 	reader.nextLine();

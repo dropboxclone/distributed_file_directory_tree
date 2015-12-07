@@ -4,8 +4,13 @@ import java.nio.file.Files;
 import com.hazelcast.core.HazelcastInstance;
 import java.nio.file.FileSystems;
 
+import com.hazelcast.core.*;
+
+import java.util.Map;
+import java.nio.file.StandardCopyOption;
+
 public class MsgAction implements MessageListener<Action>{
-	//final static HazelcastInstance instance;
+	static HazelcastInstance instance;
 	public MsgAction(HazelcastInstance i){
 		instance = i;
 	}
@@ -22,23 +27,39 @@ public class MsgAction implements MessageListener<Action>{
 
 	public void onMessage(Message<Action> msg){
 		Action act = msg.getMessageObject();
-		if(act.getAction() == "add_file" || act.action == "edit_file"){
+		if(act.getAction() == "add_file" || act.getAction() == "edit_file"){
 			//Folder path
 			int lastBackSlashIndex = act.getPath().lastIndexOf("/");
-			String parentFolderPath = action.getPath().substring(0,lastBackSlashIndex);
-			String fileName = action.getPath().substring(i+1);
-			File newFile = instance.getMap(parentFolderPath).get(fileName);
-			Files.copy(newFile.getByteArrayStream(),FileSystems.getDefault().getPath(act.getPath()), StandardCopyOption.REPLACE_EXISTING);
+			String parentFolderPath = act.getPath().substring(0,lastBackSlashIndex);
+			String fileName = act.getPath().substring(lastBackSlashIndex+1);
+			Map<String,FileOrFolder> contents = instance.getMap(parentFolderPath);
+			File newFile = (File) contents.get(fileName);
+			try{
+				Files.copy(newFile.getByteArrayStream(),FileSystems.getDefault().getPath(act.getPath()), StandardCopyOption.REPLACE_EXISTING);
+			}
+			catch(Exception e){
+				System.out.println("[MsgAction] Exception e="+e);
+			}
 		}
 		else if(act.getAction() == "delete_file"){
 			int lastBackSlashIndex = act.getPath().lastIndexOf("/");
-			String parentFolderPath = action.getPath().substring(0,lastBackSlashIndex);
-			String fileName = action.getPath().substring(i+1);
-			Files.delete(FileSystems.getDefault().getPath(act.getPath());
+			String parentFolderPath = act.getPath().substring(0,lastBackSlashIndex);
+			String fileName = act.getPath().substring(lastBackSlashIndex+1);
+			try{
+				Files.delete(FileSystems.getDefault().getPath(act.getPath()));
+			}
+			catch(Exception e){
+				System.out.println("[MsgAction] Exception e="+e);
+			}
 		}
 		else if(act.getAction() == "create_folder"){
 			//TODO : will create conflict incase directory already present
-			Files.createDirectory(FileSystems.getDefault().getPath(act.getPath()));
+			try{
+				Files.createDirectory(FileSystems.getDefault().getPath(act.getPath()));
+			}
+			catch(Exception e){
+				System.out.println("[MsgAction] Exception e="+e);
+			}
 		}
 		else if(act.getAction() == "delete_folder"){
 			//java.io.File top = new java.io.File(act.getPath());

@@ -6,7 +6,7 @@ public class Action implements Serializable{
 	public String action;
 	public String path;
 
-	public String(String a, String p){
+	public Action(String a, String p){
 		action = a;
 		path = p;
 	}

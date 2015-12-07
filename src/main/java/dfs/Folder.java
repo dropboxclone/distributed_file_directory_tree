@@ -9,6 +9,11 @@ import java.nio.file.Files;
 import java.nio.file.FileSystems;
 //import java.io;
 
+import com.hazelcast.core.ITopic;
+
+import java.io.IOException;
+
+
 public class Folder implements FileOrFolder{
 	String name;
 	String path;
@@ -17,16 +22,20 @@ public class Folder implements FileOrFolder{
 
 	ITopic<Action> actions;
 	//final static WatchDir watch;
+
+	public void initiateDirectoryWatching() throws IOException{
+		(new Thread(
+			new WatchDir(FileSystems.getDefault().getPath(path),actions)
+			)
+		).start();
+	}
+
 	public Folder(String n, String p){
 		name = n;
 		path = p;
 		Map<String,FileOrFolder> contents = instance.getMap(path);
 		actions = instance.getTopic("Actions");
-		actions.addMessageLinstener(new MsgAction(instance));
-		(new Thread(
-			new WatchDir(FileSystems.getDefault().getPath(path),actions); 
-			)
-		).start();
+		actions.addMessageListener(new MsgAction(instance));
 	}
 	public String getName(){ return name; }
 	public String getPath(){ return path; }

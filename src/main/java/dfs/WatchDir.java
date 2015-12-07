@@ -95,7 +95,7 @@ public class WatchDir implements Runnable{
     private final boolean recursive;
     private boolean trace = false;
 
-    private final static ITopic<String> topic;
+    private static ITopic<Action> topic;
 
     @SuppressWarnings("unchecked")
     static <T> WatchEvent<T> cast(WatchEvent<?> event) {
@@ -140,8 +140,8 @@ public class WatchDir implements Runnable{
     /**
      * Creates a WatchService and registers the given directory
      */
-    WatchDir(Path dir, boolean recursive, ITopic<String> t) throws IOException {
-        this.topic = t;
+    WatchDir(Path dir, boolean recursive, ITopic<Action> t) throws IOException {
+        topic = t;
         this.watcher = FileSystems.getDefault().newWatchService();
         this.keys = new HashMap<WatchKey,Path>();
         this.recursive = recursive;
@@ -158,15 +158,21 @@ public class WatchDir implements Runnable{
         this.trace = true;
     }
 
-    WatchDir(Path dir, ITopic<String> t){
+    WatchDir(Path dir, ITopic<Action> t) throws IOException{
         this(dir,true,t);
+        // try{
+        //     this(dir,true,t);
+        // }
+        // catch(Exception e){
+        //     System.out.println("[WatchDir] Some exception occured : e="+e);
+        // }
     }
 
     /**
      * Process all events for keys queued to the watcher
      */
 
-    private static forwardToItopic(WatchEvent.Kind<Path> kind, Path dir){
+    private static void forwardToItopic(WatchEvent.Kind<Path> kind, Path dir){
         boolean isDir = Files.isDirectory(dir);
         if(kind == ENTRY_CREATE){
             if(!isDir){
