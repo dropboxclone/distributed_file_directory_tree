@@ -16,12 +16,17 @@ public class Folder implements FileOrFolder{
 	//Map<String,FileOrFolder> contents;
 
 	ITopic<Action> actions;
+	//final static WatchDir watch;
 	public Folder(String n, String p){
 		name = n;
 		path = p;
 		Map<String,FileOrFolder> contents = instance.getMap(path);
 		actions = instance.getTopic("Actions");
 		actions.addMessageLinstener(new MsgAction(instance));
+		(new Thread(
+			new WatchDir(FileSystems.getDefault().getPath(path),actions); 
+			)
+		).start();
 	}
 	public String getName(){ return name; }
 	public String getPath(){ return path; }

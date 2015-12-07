@@ -12,4 +12,7 @@ public class Action implements Serializable{
 	}
 	public String getAction(){return action;}
 	public String getPath(){return path;}
+	public String toString(){
+		return "{action:"+action+",path:"+path+"}";
+	}
 }
