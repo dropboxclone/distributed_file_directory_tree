@@ -27,7 +27,7 @@ public class MsgAction implements MessageListener<Action>{
 
 	public void onMessage(Message<Action> msg){
 		Action act = msg.getMessageObject();
-		if(act.getAction() == "add_file" || act.getAction() == "edit_file"){
+		if(act.getAction().equals("add_file") || act.getAction().equals("edit_file")){
 			//Folder path
 			int lastBackSlashIndex = act.getPath().lastIndexOf("/");
 			String parentFolderPath = act.getPath().substring(0,lastBackSlashIndex);
@@ -41,7 +41,7 @@ public class MsgAction implements MessageListener<Action>{
 				System.out.println("[MsgAction] Exception e="+e);
 			}
 		}
-		else if(act.getAction() == "delete_file"){
+		else if(act.getAction().equals("delete_file")){
 			int lastBackSlashIndex = act.getPath().lastIndexOf("/");
 			String parentFolderPath = act.getPath().substring(0,lastBackSlashIndex);
 			String fileName = act.getPath().substring(lastBackSlashIndex+1);
@@ -52,7 +52,7 @@ public class MsgAction implements MessageListener<Action>{
 				System.out.println("[MsgAction] Exception e="+e);
 			}
 		}
-		else if(act.getAction() == "create_folder"){
+		else if(act.getAction().equals("create_folder")){
 			//TODO : will create conflict incase directory already present
 			try{
 				Files.createDirectory(FileSystems.getDefault().getPath(act.getPath()));
@@ -61,12 +61,12 @@ public class MsgAction implements MessageListener<Action>{
 				System.out.println("[MsgAction] Exception e="+e);
 			}
 		}
-		else if(act.getAction() == "delete_folder"){
+		else if(act.getAction().equals("delete_folder")){
 			//java.io.File top = new java.io.File(act.getPath());
 			//for(java.io.File sub : top.listFiles()){
 			deleteFileorFolderOnDisk(new java.io.File(act.getPath()));
 		}
-		else if(act.getAction() == "delete_entry"){
+		else if(act.getAction().equals("delete_entry")){
 			deleteFileorFolderOnDisk(new java.io.File(act.getPath()));
 		}
 		else{
