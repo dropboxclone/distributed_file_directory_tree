@@ -176,9 +176,15 @@ public class WatchDir implements Runnable{
         boolean isDir = Files.isDirectory(dir);
         if(kind == ENTRY_CREATE){
             if(!isDir){
-                topic.publish(new Action("add_file",dir.toString()));
+                Action act = new Action("add_file",dir.toString());
+                int lastBackSlashIndex = act.getPath().lastIndexOf("/");
+                String parentFolderPath = act.getPath().substring(0,lastBackSlashIndex);
+                String fileName = act.getPath().substring(lastBackSlashIndex+1);
+                Folder.getFileFromDiskTo(parentFolderPath,fileName);
+                topic.publish(act);
             }
             else{
+                //TODO change the internal map
                 topic.publish(new Action("create_folder",dir.toString()));
             }
         }

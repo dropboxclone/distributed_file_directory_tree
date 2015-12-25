@@ -28,6 +28,9 @@ public class File implements FileOrFolder{
 	public ByteArrayInputStream getByteArrayStream(){
 		return new ByteArrayInputStream(contents);
 	}
+	public byte[] getContents(){
+		return contents;
+	}
 	public String getName(){ return name; }
 	public String getPath(){ return path; }
 	public JSONObject toJSON(){

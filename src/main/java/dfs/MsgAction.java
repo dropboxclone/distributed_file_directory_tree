@@ -1,6 +1,10 @@
 package dfs;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+
 import com.hazelcast.core.HazelcastInstance;
 import java.nio.file.FileSystems;
 
@@ -27,6 +31,7 @@ public class MsgAction implements MessageListener<Action>{
 
 	public void onMessage(Message<Action> msg){
 		Action act = msg.getMessageObject();
+
 		if(act.getAction().equals("add_file") || act.getAction().equals("edit_file")){
 			//Folder path
 			int lastBackSlashIndex = act.getPath().lastIndexOf("/");
@@ -34,8 +39,19 @@ public class MsgAction implements MessageListener<Action>{
 			String fileName = act.getPath().substring(lastBackSlashIndex+1);
 			Map<String,FileOrFolder> contents = instance.getMap(parentFolderPath);
 			File newFile = (File) contents.get(fileName);
+
+			Path newFilePath = Paths.get(act.getPath());
 			try{
-				Files.copy(newFile.getByteArrayStream(),FileSystems.getDefault().getPath(act.getPath()), StandardCopyOption.REPLACE_EXISTING);
+				if(Files.exists(newFilePath)){
+					if(!Arrays.equals(Files.readAllBytes(newFilePath),newFile.getContents())){
+						try{
+							Files.copy(newFile.getByteArrayStream(),FileSystems.getDefault().getPath(act.getPath()), StandardCopyOption.REPLACE_EXISTING);
+						}
+						catch(Exception e){
+							System.out.println("[MsgAction] Exception e="+e);
+						}
+					}
+				}
 			}
 			catch(Exception e){
 				System.out.println("[MsgAction] Exception e="+e);
