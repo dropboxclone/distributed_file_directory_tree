@@ -17,7 +17,7 @@ dependencies {
     //compile 'com.googlecode.json-simple:json-simple:1.1.1'
 }
 
-mainClassName = 'dfs.SharingDemo'
+mainClassName = 'dfs.Main'
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.8'

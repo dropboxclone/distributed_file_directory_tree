@@ -7,7 +7,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
 import java.io.IOException;
 
-public class SharingDemo{
+public class Main{
 	public static void copyFolder(Folder f) throws IOException{
 		for(FileOrFolder sub : f.getContents().values()){
 			if(sub instanceof File){
@@ -23,21 +23,6 @@ public class SharingDemo{
 			}
 		}
 	};
-	// public static void syncFolder(String path, Folder syncDest){
-	// 	io.File top = new io.File(path);
-	// 	for(io.File sub : top.listFiles()){
-	// 		boolean contains = syncDest.getContents().containsKey(sub.getName()); 
-	// 		if(!sub.isDirectory()){
-	// 			if(!contains)
-	// 				syncDest.getFileFromDisk(sub.getName());
-	// 		}
-	// 		else{
-	// 			if(!contains)
-	// 				syncDest.createSubFolder(sub.getName());
-	// 			syncFolder(sub.getPath(),)
-	// 		}
-	// 	}
-	// }
 	public static void main(String[] args) throws IOException{
 		Folder root = new Folder(".",".");
 		copyFolder(root);
@@ -48,11 +33,5 @@ public class SharingDemo{
 		
 		System.out.println("[Main] Initializing Directory Watching");
 		root.initiateDirectoryWatching();
-
-		// Scanner reader = new Scanner(System.in);
-		// while(true){
-		// 	reader.nextLine();
-		// 	Folder.syncFolder(".",".");
-		// }
 	}
 }
