@@ -27,7 +27,7 @@ public class Folder implements FileOrFolder{
 		ITopic<Action> actions = instance.getTopic("Actions");
 		actions.addMessageListener(new MsgAction(instance));
 		(new Thread(
-			new WatchDir(FileSystems.getDefault().getPath(path),actions,this)
+			new WatchDir(FileSystems.getDefault().getPath(path),actions)
 			)
 		).start();
 	}
@@ -100,7 +100,6 @@ public class Folder implements FileOrFolder{
 			byte[] fileContents = Files.readAllBytes(FileSystems.getDefault().getPath(destPath,fname));
 			Map<String,FileOrFolder> folderContents = instance.getMap(destPath);
 			folderContents.put(fname,new File(fname,destPath+"/"+fname,fileContents));
-			System.out.println("[getFileFromDisk] fname="+fname +",destPath="+destPath+" - added to FS.\nKeys in dest path="+instance.getMap(destPath).keySet());
 		}
 		catch(Exception e){
 			System.out.println("Something bad happened!\n" + e);
