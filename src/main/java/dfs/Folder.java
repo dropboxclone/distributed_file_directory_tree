@@ -20,10 +20,12 @@ public class Folder implements FileOrFolder{
 	final static HazelcastInstance instance = Hazelcast.newHazelcastInstance(new Config());
 	//Map<String,FileOrFolder> contents;
 
-	ITopic<Action> actions;
+	//ITopic<Action> actions;
 	//final static WatchDir watch;
 
 	public void initiateDirectoryWatching() throws IOException{
+		ITopic<Action> actions = instance.getTopic("Actions");
+		actions.addMessageListener(new MsgAction(instance));
 		(new Thread(
 			new WatchDir(FileSystems.getDefault().getPath(path),actions)
 			)
@@ -34,8 +36,6 @@ public class Folder implements FileOrFolder{
 		name = n;
 		path = p;
 		Map<String,FileOrFolder> contents = instance.getMap(path);
-		actions = instance.getTopic("Actions");
-		actions.addMessageListener(new MsgAction(instance));
 	}
 	public String getName(){ return name; }
 	public String getPath(){ return path; }
