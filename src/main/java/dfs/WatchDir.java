@@ -96,6 +96,8 @@ public class WatchDir implements Runnable{
     private boolean trace = false;
 
     private static ITopic<Action> topic;
+    private static Folder rootFolder;
+
 
     @SuppressWarnings("unchecked")
     static <T> WatchEvent<T> cast(WatchEvent<?> event) {
@@ -140,7 +142,7 @@ public class WatchDir implements Runnable{
     /**
      * Creates a WatchService and registers the given directory
      */
-    WatchDir(Path dir, boolean recursive, ITopic<Action> t) throws IOException {
+    WatchDir(Path dir, boolean recursive, ITopic<Action> t,Folder r) throws IOException {
         topic = t;
         this.watcher = FileSystems.getDefault().newWatchService();
         this.keys = new HashMap<WatchKey,Path>();
@@ -156,10 +158,11 @@ public class WatchDir implements Runnable{
 
         // enable trace after initial registration
         this.trace = true;
+        this.rootFolder = r;
     }
 
-    WatchDir(Path dir, ITopic<Action> t) throws IOException{
-        this(dir,true,t);
+    WatchDir(Path dir, ITopic<Action> t, Folder r) throws IOException{
+        this(dir,true,t,r);
         // try{
         //     this(dir,true,t);
         // }
@@ -180,7 +183,8 @@ public class WatchDir implements Runnable{
                 int lastBackSlashIndex = act.getPath().lastIndexOf("/");
                 String parentFolderPath = act.getPath().substring(0,lastBackSlashIndex);
                 String fileName = act.getPath().substring(lastBackSlashIndex+1);
-                Folder.getFileFromDiskTo(parentFolderPath,fileName);
+                rootFolder.getFileFromDiskTo(parentFolderPath,fileName);
+                System.out.println("Created file with parentFolderPath="+parentFolderPath+", fileName="+fileName+" - maybe successfull");
                 topic.publish(act);
             }
             else{
