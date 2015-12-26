@@ -99,12 +99,16 @@ public class WatchDir implements Runnable{
         if(kind == ENTRY_CREATE){
             if(!isDir){
                 Action act = new Action("add_file",dir.toString());
-                int lastBackSlashIndex = act.getPath().lastIndexOf("/");
-                String parentFolderPath = act.getPath().substring(0,lastBackSlashIndex);
-                String fileName = act.getPath().substring(lastBackSlashIndex+1);
-                Folder.getFileFromDiskTo(parentFolderPath,fileName);
-                System.out.println("Created file with parentFolderPath="+parentFolderPath+", fileName="+fileName+" - maybe successfull");
+                //int lastBackSlashIndex = act.getPath().lastIndexOf("/");
+                //String parentFolderPath = act.getPath().substring(0,lastBackSlashIndex);
+                //String fileName = act.getPath().substring(lastBackSlashIndex+1);
+                //Folder.getFileFromDiskTo(parentFolderPath,fileName);
+                Folder.getFileFromDiskToWinSafe(act.getPath());
                 topic.publish(act);
+                //try{
+                //    System.out.println("Canonical path of " + act.getPath() + " = " + (new java.io.File(act.getPath())).getCanonicalPath()); //Debug
+                //} catch(Exception e){}
+                //System.out.println("[parent path] Parent of "+act.getPath()+" = " + (new java.io.File(act.getPath())).getParent() + ", and name of file = " + (new java.io.File(act.getPath())).getName()); //Debug
             }
             else{
                 //TODO change the internal map

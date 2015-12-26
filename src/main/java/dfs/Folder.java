@@ -5,6 +5,8 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.config.Config;
 import java.util.Map;
+import java.util.Stack;
+import java.lang.StringBuilder;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
 //import java.io;
@@ -104,6 +106,23 @@ public class Folder implements FileOrFolder{
 		catch(Exception e){
 			System.out.println("Something bad happened!\n" + e);
 		}
+	}
+
+	public static void getFileFromDiskToWinSafe(String path){
+		java.io.File fileObj = new java.io.File(path);
+		java.io.File root = new java.io.File(".");
+		//String parentPath = fileObj.getParent();
+		String filename = fileObj.getName();
+		Stack<String> parentTrace = new Stack<String>();
+		while(!fileObj.getParentFile().equals(root)){
+			parentTrace.push(fileObj.getParentFile().getName());
+			fileObj = fileObj.getParentFile();
+		}
+		StringBuilder parentPath = new StringBuilder(".");
+		while(!parentTrace.empty()){
+			parentPath.append("/" + parentTrace.pop());
+		}
+		getFileFromDiskTo(parentPath.toString(),filename);
 	}
 
 	public Map<String,FileOrFolder> getContents(){
