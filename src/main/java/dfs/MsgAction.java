@@ -32,9 +32,12 @@ public class MsgAction implements MessageListener<Action>{
 	public void onMessage(Message<Action> msg){
 		Action act = msg.getMessageObject();
 		if(act.getAction().equals("add_file") || act.getAction().equals("edit_file")){
-			int lastBackSlashIndex = act.getPath().lastIndexOf("/");
-			String parentFolderPath = act.getPath().substring(0,lastBackSlashIndex);
-			String fileName = act.getPath().substring(lastBackSlashIndex+1);
+			//int lastBackSlashIndex = act.getPath().lastIndexOf("/");
+			//String parentFolderPath = act.getPath().substring(0,lastBackSlashIndex);
+			//String fileName = act.getPath().substring(lastBackSlashIndex+1);
+			String parentFolderPath = Folder.locateParentFolder(Paths.get(act.getPath()));
+			String fileName = (new java.io.File(act.getPath())).getName(); 
+
 			Map<String,FileOrFolder> contents = instance.getMap(parentFolderPath);
 			File newFile = (File) contents.get(fileName);
 			Path newFilePath = Paths.get(act.getPath());

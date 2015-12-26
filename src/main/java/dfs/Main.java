@@ -3,6 +3,9 @@ package dfs;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.util.Arrays;
 //import java.io;
 import java.util.Scanner;
 import java.io.IOException;
@@ -23,11 +26,34 @@ public class Main{
 			}
 		}
 	};
+	public static void copyFolderWinSafe(Folder f) throws IOException{
+		for(FileOrFolder sub : f.getContents().values()){
+			Path localPath = Folder.getFileSystemPath(sub.getPath());
+			if(sub instanceof File){
+				File subFile = (File) sub;
+				//Files.copy(subFile.getByteArrayStream(),FileSystems.getDefault().getPath(f.getPath()+"/"+subFile.getName()), StandardCopyOption.REPLACE_EXISTING);
+				if(Files.exists(localPath)){
+					if ( !Arrays.equals(subFile.getContents(),Files.readAllBytes(localPath)) )
+						Files.write(localPath,subFile.getContents());
+				} else {
+					Files.write(localPath,subFile.getContents());
+				}
+			}
+			else{
+				Folder subFolder = (Folder) sub;
+				if(!Files.isDirectory(localPath)){
+					Files.createDirectory(localPath);
+				}
+				copyFolderWinSafe(subFolder);
+			}
+		}
+	};
 	public static void main(String[] args) throws IOException{
 		Folder root = new Folder(".",".");
 		copyFolder(root);
 		System.out.println("Copied root directory! Root : \n" + root);
-		Folder.syncFolder(".",".");
+		//Folder.syncFolder(".",".");
+		Folder.syncFolderWinSafe(Paths.get("."));
 		System.out.println("Synced with file directory root! Root : \n" + root);
 
 		

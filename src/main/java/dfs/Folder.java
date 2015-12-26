@@ -9,6 +9,10 @@ import java.util.Stack;
 import java.lang.StringBuilder;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+
 //import java.io;
 
 import com.hazelcast.core.ITopic;
@@ -108,6 +112,30 @@ public class Folder implements FileOrFolder{
 		}
 	}
 
+	public static String locateParentFolder(Path p){
+		java.io.File fileObj = p.toFile();
+		java.io.File root = new java.io.File(".");
+		Stack<String> parentTrace = new Stack<String>();
+		while(!fileObj.getParentFile().equals(root)){
+			parentTrace.push(fileObj.getParentFile().getName());
+			fileObj = fileObj.getParentFile();
+		}
+		StringBuilder parentPath = new StringBuilder(".");
+		while(!parentTrace.empty()){
+			parentPath.append("/" + parentTrace.pop());
+		}
+		return parentPath.toString();
+	}
+
+	public static Path getFileSystemPath(String internalPath){
+		String[] pathComponents = internalPath.split("/");
+		Path r = Paths.get(".");
+		for(int i = 1; i < pathComponents.length; i++){
+			r = r.resolve(pathComponents[i]);
+		}
+		return r;
+	}
+
 	public static void getFileFromDiskToWinSafe(String path){
 		java.io.File fileObj = new java.io.File(path);
 		java.io.File root = new java.io.File(".");
@@ -144,6 +172,32 @@ public class Folder implements FileOrFolder{
 					createSubFolderTo(syncDestPath,sub.getName());
 				}
 				syncFolder(sub.getPath(),syncDestPath+"/"+sub.getName());
+			}
+		}
+	}
+
+	public static void syncFolderWinSafe(Path folderPath){
+		for(java.io.File sub : folderPath.toFile().listFiles()){
+			String parentPath = locateParentFolder(sub.toPath());
+			Map<String,FileOrFolder> parentDirectoryMap = instance.getMap(parentPath);
+			boolean isAlreadyPresent = parentDirectoryMap.containsKey(sub.getName());
+			if(!sub.isDirectory()){
+				try{
+					if(isAlreadyPresent){
+						File cloudversion = (File) parentDirectoryMap.get(sub.getName());
+						if ( !Arrays.equals(cloudversion.getContents(),Files.readAllBytes(sub.toPath())) )
+							Files.write(sub.toPath(),cloudversion.getContents());
+					} else {
+						parentDirectoryMap.put(sub.getName(),new File(sub.getName(),parentPath + "/" + sub.getName(),Files.readAllBytes(sub.toPath())));
+					}
+				} catch(Exception e){
+					System.out.println("Something bad happened.. Exception = " + e);
+				}
+			} else {
+				if(!isAlreadyPresent){
+					parentDirectoryMap.put(sub.getName(),new Folder(sub.getName(),parentPath+"/"+sub.getName()));
+				}
+				syncFolderWinSafe(sub.toPath());
 			}
 		}
 	}
