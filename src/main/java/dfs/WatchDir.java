@@ -105,14 +105,8 @@ public class WatchDir implements Runnable{
         }
         else if(kind == ENTRY_DELETE){
             //todo
-            if(!isDir){
-                Folder.deleteFileFromInternal(dir);
-                topic.publish(new Action("delete_file",Folder.getInternalPath(dir)));
-            }
-            else{
-                Folder.deleteFolderFromInternal(dir);
-                topic.publish(new Action("delete_folder",Folder.getInternalPath(dir)));
-            }
+            Folder.deleteFromInternal(dir);
+            topic.publish(new Action("delete_entry",Folder.getInternalPath(dir)));
         }
         else if(kind == ENTRY_MODIFY){
             //todo
