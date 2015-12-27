@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 //import java.io;
 
 import com.hazelcast.core.ITopic;
@@ -368,7 +369,7 @@ public class Folder implements FileOrFolder{
 
 	public static void deleteFromInternal(String internalParentPath, String internalName){
 		FileOrFolder toDelete = (FileOrFolder) instance.getMap(internalParentPath).get(internalName);
-		if(toDelete != null) return;
+		if(toDelete == null) return;
 		if(toDelete instanceof File)
 			deleteFileFromInternal(internalParentPath,internalName);
 		if(toDelete instanceof Folder)
@@ -401,15 +402,8 @@ public class Folder implements FileOrFolder{
 	//To use
 	public static void deleteFolderFromFS(Path fsPath){
 		try{
-			try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(fsPath)){
-				for(Path content: dirStream){
-					if(!Files.isDirectory(content))
-						deleteFileFromFS(fsPath);
-					else
-						deleteFolderFromFS(fsPath);
-				}
-			}
-			Files.deleteIfExists(fsPath);
+			if(Files.exists(fsPath))
+				FileUtils.deleteDirectory(fsPath.toFile());
 		} catch(Exception e){
 			System.err.println("Exception " + e + " occured in dfs.Folder.deleteFolderFromFS");
 			System.err.println("Inputs: fsPath="+fsPath);
