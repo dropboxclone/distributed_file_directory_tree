@@ -31,6 +31,7 @@ public class MsgAction implements MessageListener<Action>{
 
 	public void onMessage(Message<Action> msg){
 		Action act = msg.getMessageObject();
+		act.setPath(Folder.getFileSystemPath(act.getPath()).toString());
 		if(act.getAction().equals("add_file") || act.getAction().equals("edit_file")){
 			//int lastBackSlashIndex = act.getPath().lastIndexOf("/");
 			//String parentFolderPath = act.getPath().substring(0,lastBackSlashIndex);

@@ -136,6 +136,10 @@ public class Folder implements FileOrFolder{
 		return r;
 	}
 
+	public static String getInternalPath(Path fileSystemPath){
+		return locateParentFolder(fileSystemPath) + "/" + fileSystemPath.toFile().getName();
+	}
+
 	public static void getFileFromDiskToWinSafe(String path){
 		java.io.File fileObj = new java.io.File(path);
 		java.io.File root = new java.io.File(".");

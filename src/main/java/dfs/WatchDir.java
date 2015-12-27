@@ -92,21 +92,23 @@ public class WatchDir implements Runnable{
         boolean isDir = Files.isDirectory(dir);
         if(kind == ENTRY_CREATE){
             if(!isDir){
-                Action act = new Action("add_file",dir.toString());
+                Action act = new Action("add_file",Folder.getInternalPath(dir));
                 Folder.getFileFromDiskToWinSafe(act.getPath());
                 topic.publish(act);
             }
             else{
                 //TODO change the internal map
-                topic.publish(new Action("create_folder",dir.toString()));
+                topic.publish(new Action("create_folder",Folder.getInternalPath(dir)));
             }
         }
         else if(kind == ENTRY_DELETE){
-            topic.publish(new Action("delete_entry",dir.toString()));
+            //todo
+            topic.publish(new Action("delete_entry",Folder.getInternalPath(dir)));
         }
         else if(kind == ENTRY_MODIFY){
+            //todo
             if(!isDir)
-                topic.publish(new Action("edit_file",dir.toString()));
+                topic.publish(new Action("edit_file",Folder.getInternalPath(dir)));
         }
         else{
             //TODO
