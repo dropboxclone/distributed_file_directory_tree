@@ -12,7 +12,12 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Set;
 
+import java.io.InputStream;
+import java.nio.file.DirectoryStream;
+
+import org.apache.commons.io.IOUtils;
 //import java.io;
 
 import com.hazelcast.core.ITopic;
@@ -112,6 +117,278 @@ public class Folder implements FileOrFolder{
 		}
 	}
 
+	//utility
+	public static String[] getInternalParentPathAndName(String internalPath){
+		String[] parentPathAndName = new String[2];
+		int indexOfLastBackSlash = internalPath.lastIndexOf("/");
+		parentPathAndName[0] = internalPath.substring(0,indexOfLastBackSlash);
+		parentPathAndName[1] = internalPath.substring(indexOfLastBackSlash+1);
+		return parentPathAndName;
+	}
+
+	//utility
+	/*
+	public static String getInternalPath(Path fsPath){
+		StringBuilder internalParentPath = new StringBuilder(fsPath.toString().length());
+		internalParentPath.append(fsPath.getName(0).toString());
+		for(int i=1; i<fs.getNameCount(); i++)
+			internalParentPath.append("/"+fsPath.getName(i).toString());
+		return internalParentPath.toString();
+	};
+	*/
+
+	//utility
+	public static boolean isPresentInInternal(String internalParentPath,String internalName){
+		return instance.getMap(internalParentPath).containsKey(internalName);
+	}
+
+	//To use
+	public static void loadFileFromFSToInternal(Path fsPath, String internalParentPath, String internalFileName){
+		InputStream fis = null;
+		try{
+			fis = Files.newInputStream(fsPath);
+			byte[] internalFileContents = IOUtils.toByteArray(fis);
+			if(
+				!isPresentInInternal(internalParentPath,internalFileName) || 
+				!Arrays.equals(
+					internalFileContents,
+					((File) instance.getMap(internalParentPath).get(internalFileName)).getContents()
+				)
+			) {
+				instance.getMap(internalParentPath).put(internalFileName,
+					new File(internalFileName,internalParentPath+"/"+internalFileName,internalFileContents)
+				);
+			}
+		} catch(Exception e){
+			System.err.println("Exception " + e + " occured in dfs.Folder.loadFileFromFSToInternal");
+			System.err.println("Inputs: fsPath="+fsPath+", internalParentPath="+internalParentPath+",internalFileName="+internalFileName);
+			e.printStackTrace();
+		} finally{
+			if(fis != null){
+				try{
+					fis.close();
+				} catch(Exception e){
+					System.err.println("Exception " + e + " occured in dfs.Folder.loadFileFromFSToInternal");
+					System.err.println("Inputs: fsPath="+fsPath+", internalParentPath="+internalParentPath+",internalFileName="+internalFileName);
+				}
+			}
+		}
+	};
+
+	//To use
+	public static void loadFileFromFSToInternal(Path fsPath, String internalPath){
+		String[] internalParentPathAndName = getInternalParentPathAndName(internalPath);
+		loadFileFromFSToInternal(fsPath,internalParentPathAndName[0],internalParentPathAndName[1]);
+	};
+
+	//To use
+	public static void loadFileFromFSToInternal(Path fsPath){
+		loadFileFromFSToInternal(fsPath,getInternalPath(fsPath));
+	};
+
+	//To use
+	public static void loadFileFromFSToInternal(String internalPath){
+		loadFileFromFSToInternal(getFileSystemPath(internalPath),internalPath);
+	};
+
+	//To use
+	public static void loadFileFromFSToInternal(String internalParentPath, String internalFileName){
+		loadFileFromFSToInternal(getFileSystemPath(internalParentPath,internalFileName),internalParentPath,internalFileName);
+	}
+
+	//utility
+	public static byte[] getContentsFromFS(Path fsPath) throws Exception{
+		InputStream fis = Files.newInputStream(fsPath);
+		byte[] contents = IOUtils.toByteArray(fis);
+		fis.close();
+		return contents;
+	};
+
+	//To use
+	public static void loadFileFromInternalToFS(Path fsPath, String internalParentPath, String internalFileName){
+		try{
+			if(
+				!Files.exists(fsPath) ||
+				!Arrays.equals(
+					getContentsFromFS(fsPath),
+					((File) instance.getMap(internalParentPath).get(internalFileName)).getContents()
+				)
+			) {
+				Files.write(fsPath,
+					((File) instance.getMap(internalParentPath).get(internalFileName)).getContents()
+				);
+			}
+		} catch(Exception e){
+			System.err.println("Exception " + e + " occured in dfs.Folder.loadFileFromInternalToFS");
+			System.err.println("Inputs: fsPath="+fsPath+", internalParentPath="+internalParentPath+",internalFileName="+internalFileName);
+			e.printStackTrace();
+		}
+	};
+
+	//To use
+	public static void loadFileFromInternalToFS(Path fsPath, String internalPath){
+		String[] internalParentPathAndName = getInternalParentPathAndName(internalPath);
+		loadFileFromInternalToFS(fsPath,internalParentPathAndName[0],internalParentPathAndName[1]);
+	};
+
+	//To use
+	public static void loadFileFromInternalToFS(Path fsPath){
+		loadFileFromInternalToFS(fsPath,getInternalPath(fsPath));
+	};
+
+	//To use
+	public static void loadFileFromInternalToFS(String internalPath){
+		loadFileFromInternalToFS(getFileSystemPath(internalPath),internalPath);
+	};
+
+	//To use
+	public static void loadFileFromInternalToFS(String internalParentPath, String internalFileName){
+		loadFileFromInternalToFS(getFileSystemPath(internalParentPath,internalFileName),internalParentPath,internalFileName);
+	};
+
+	//To use
+	public static void loadFolderFromFSToInternal(Path fsPath, String internalParentPath, String internalFolderName){
+		String internalFolderPath = internalParentPath+"/"+internalFolderName;
+		try{
+			if(!instance.getMap(internalParentPath).containsKey(internalFolderName)){
+				instance.getMap(internalParentPath).put(internalFolderName,
+					new Folder(internalFolderName,internalFolderPath)
+				);
+			}
+			try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(fsPath)){
+	        	for(Path content: dirStream){
+	        		if(!Files.isDirectory(content))
+	        			loadFileFromFSToInternal(
+	        				content,
+	        				internalFolderPath,
+	        				internalFolderPath+"/"+content.getFileName().toString());
+	        		else
+	        			loadFolderFromFSToInternal(
+	        				content,
+	        				internalFolderPath,
+	        				internalFolderPath+"/"+content.getFileName().toString());
+	        	}
+	        }
+    	} catch (Exception e) {
+    		System.err.println("Exception " + e + " occured in dfs.Folder.loadFolderFromFSToInternal");
+			System.err.println("Inputs: fsPath="+fsPath+", internalParentPath="+internalParentPath+",internalFolderName="+internalFolderName);
+			e.printStackTrace();
+    	}
+	};
+
+	//To use
+	public static void loadFolderFromFSToInternal(Path fsPath, String internalPath){
+		String[] internalParentPathAndName = getInternalParentPathAndName(internalPath);
+		loadFolderFromFSToInternal(fsPath,internalParentPathAndName[0],internalParentPathAndName[1]);
+	};
+
+	//To use
+	public static void loadFolderFromFSToInternal(Path fsPath){
+		loadFolderFromFSToInternal(fsPath,getInternalPath(fsPath));
+	};
+
+	//To use
+	public static void loadFolderFromFSToInternal(String internalPath){
+		loadFolderFromFSToInternal(getFileSystemPath(internalPath),internalPath);
+	};
+
+	//To use
+	public static void loadFolderFromFSToInternal(String internalParentPath, String internalFolderName){
+		loadFolderFromFSToInternal(getFileSystemPath(internalParentPath,internalFolderName),internalParentPath,internalFolderName);
+	};
+
+	//To use
+	public static void loadFolderFromInternalToFS(Path fsPath, String internalFolderPath){
+		try{
+			if(!Files.exists(fsPath))
+				Files.createDirectory(fsPath);
+			Map<String,FileOrFolder> contents = instance.getMap(internalFolderPath);
+			for(String contentName : contents.keySet()){
+				if(contents.get(contentName) instanceof File)
+					loadFileFromInternalToFS(fsPath.resolve(contentName),internalFolderPath,contentName);
+				else
+					loadFolderFromInternalToFS(fsPath.resolve(contentName),internalFolderPath+"/"+contentName);
+			}
+		} catch(Exception e) {
+			System.err.println("Exception " + e + " occured in dfs.Folder.loadFolderFromInternalToFS");
+			System.err.println("Inputs: fsPath="+fsPath+",internalFolderPath="+internalFolderPath);
+			e.printStackTrace();
+		}
+	};
+
+	//To use
+	public static void loadFolderFromInternalToFS(String internalFolderPath){
+		loadFolderFromInternalToFS(getFileSystemPath(internalFolderPath),internalFolderPath);
+	}
+
+	//To use
+	public static void loadFolderFromInternalToFS(Path fsPath){
+		loadFolderFromInternalToFS(fsPath,getInternalPath(fsPath));
+	}
+
+	//To use
+	public static void deleteFileFromInternal(String internalParentPath, String internalFileName){
+		instance.getMap(internalParentPath).remove(internalFileName);
+	};
+
+	//To use
+	public static void deleteFileFromInternal(String internalPath){
+		String[] internalParentPathAndName = getInternalParentPathAndName(internalPath);
+		deleteFileFromInternal(internalParentPathAndName[0],internalParentPathAndName[1]);
+	};
+
+	//To use
+	public static void deleteFileFromInternal(Path fsPath){
+		deleteFileFromInternal(getInternalPath(fsPath));
+	};
+
+	//To use //TODO lock the IMAP while deleting
+	public static void deleteFolderFromInternal(String internalParentPath, String internalFolderName){
+		String internalFolderPath = internalParentPath + "/" + internalFolderName;
+		Map<String,FileOrFolder> folderContents = instance.getMap(internalFolderPath);
+		for(String containedFileOrFolderName: folderContents.keySet()){
+			if(folderContents.get(containedFileOrFolderName) instanceof File)
+				deleteFileFromInternal(internalFolderPath,containedFileOrFolderName);
+			else
+				deleteFolderFromInternal(internalFolderPath,containedFileOrFolderName);
+		}
+		instance.getMap(internalParentPath).remove(internalFolderName);
+	};
+
+	//To use
+	public static void deleteFolderFromInternal(String internalFolderPath){
+		String[] internalParentPathAndName = getInternalParentPathAndName(internalFolderPath);
+		deleteFolderFromInternal(internalParentPathAndName[0],internalParentPathAndName[1]);
+	};
+
+	//To use
+	public static void deleteFolderFromInternal(Path fsPath){
+		deleteFolderFromInternal(getInternalPath(fsPath));
+	};
+
+
+	// public static void deleteFileFromFS(Path fsPath){
+	// 	Files.delete(fsPath);
+	// };
+
+	//To use
+	public static void deleteFolderFromFS(Path fsPath){
+		try{
+			try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(fsPath)){
+				for(Path content: dirStream){
+					if(!Files.isDirectory(content))
+						Files.delete(content);
+					else
+						deleteFolderFromFS(fsPath);
+				}
+			}
+		} catch(Exception e){
+			System.err.println("Exception " + e + " occured in dfs.Folder.deleteFolderFromFS");
+			System.err.println("Inputs: fsPath="+fsPath);
+			e.printStackTrace();
+		}
+	};
+
 	public static String locateParentFolder(Path p){
 		java.io.File fileObj = p.toFile();
 		java.io.File root = new java.io.File(".");
@@ -135,6 +412,11 @@ public class Folder implements FileOrFolder{
 		}
 		return r;
 	}
+
+	//utility
+	public static Path getFileSystemPath(String internalParentPath,String internalFileName){
+		return getFileSystemPath(internalParentPath+"/"+internalFileName);
+	};
 
 	public static String getInternalPath(Path fileSystemPath){
 		return locateParentFolder(fileSystemPath) + "/" + fileSystemPath.toFile().getName();
