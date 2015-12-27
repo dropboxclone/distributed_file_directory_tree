@@ -367,9 +367,19 @@ public class Folder implements FileOrFolder{
 	};
 
 
-	// public static void deleteFileFromFS(Path fsPath){
-	// 	Files.delete(fsPath);
-	// };
+	public static void deleteFileFromFS(Path fsPath){
+	 	try{
+	 		Files.deleteIfExists(fsPath);
+	 	} catch(Exception e){
+	 		System.err.println("Exception " + e + " occured in dfs.Folder.deleteFileFromFS");
+			System.err.println("Inputs: fsPath="+fsPath);
+			e.printStackTrace();
+	 	}
+	};
+
+	public static void deleteFileFromFS(String internalPath){
+		deleteFileFromFS(getFileSystemPath(internalPath));
+	};
 
 	//To use
 	public static void deleteFolderFromFS(Path fsPath){
@@ -377,16 +387,21 @@ public class Folder implements FileOrFolder{
 			try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(fsPath)){
 				for(Path content: dirStream){
 					if(!Files.isDirectory(content))
-						Files.delete(content);
+						deleteFileFromFS(fsPath);
 					else
 						deleteFolderFromFS(fsPath);
 				}
 			}
+			Files.deleteIfExists(fsPath);
 		} catch(Exception e){
 			System.err.println("Exception " + e + " occured in dfs.Folder.deleteFolderFromFS");
 			System.err.println("Inputs: fsPath="+fsPath);
 			e.printStackTrace();
 		}
+	};
+
+	public static void deleteFolderFromFS(String internalPath){
+		deleteFolderFromFS(getFileSystemPath(internalPath));
 	};
 
 	public static String locateParentFolder(Path p){

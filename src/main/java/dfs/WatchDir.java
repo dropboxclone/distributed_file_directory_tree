@@ -93,22 +93,37 @@ public class WatchDir implements Runnable{
         if(kind == ENTRY_CREATE){
             if(!isDir){
                 Action act = new Action("add_file",Folder.getInternalPath(dir));
-                Folder.getFileFromDiskToWinSafe(act.getPath());
+                //Folder.getFileFromDiskToWinSafe(act.getPath());
+                Folder.loadFileFromFSToInternal(dir);
                 topic.publish(act);
             }
             else{
                 //TODO change the internal map
+                Folder.loadFolderFromFSToInternal(dir);
                 topic.publish(new Action("create_folder",Folder.getInternalPath(dir)));
             }
         }
         else if(kind == ENTRY_DELETE){
             //todo
-            topic.publish(new Action("delete_entry",Folder.getInternalPath(dir)));
+            if(!isDir){
+                Folder.deleteFileFromInternal(dir);
+                topic.publish(new Action("delete_file",Folder.getInternalPath(dir)));
+            }
+            else{
+                Folder.deleteFolderFromInternal(dir);
+                topic.publish(new Action("delete_folder",Folder.getInternalPath(dir)));
+            }
         }
         else if(kind == ENTRY_MODIFY){
             //todo
-            if(!isDir)
+            if(!isDir){
+                Folder.loadFileFromFSToInternal(dir);
                 topic.publish(new Action("edit_file",Folder.getInternalPath(dir)));
+            }
+            else{
+                Folder.loadFolderFromFSToInternal(dir);
+                topic.publish(new Action("edit_folder",Folder.getInternalPath(dir)));
+            }
         }
         else{
             //TODO
