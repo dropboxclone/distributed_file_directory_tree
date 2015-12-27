@@ -367,7 +367,7 @@ public class Folder implements FileOrFolder{
 	};
 
 	public static void deleteFromInternal(String internalParentPath, String internalName){
-		FileOrFolder toDelete = instance.getMap(internalParentPath).get(internalName);
+		FileOrFolder toDelete = (FileOrFolder) instance.getMap(internalParentPath).get(internalName);
 		if(toDelete != null) return;
 		if(toDelete instanceof File)
 			deleteFileFromInternal(internalParentPath,internalName);
@@ -376,7 +376,7 @@ public class Folder implements FileOrFolder{
 	};
 
 	public static void deleteFromInternal(String internalPath){
-		String internalParentPathAndName =  getInternalParentPathAndName(internalPath);
+		String[] internalParentPathAndName =  getInternalParentPathAndName(internalPath);
 		deleteFromInternal(internalParentPathAndName[0],internalParentPathAndName[1]);
 	};
 
@@ -430,7 +430,7 @@ public class Folder implements FileOrFolder{
 	};
 
 	public static void deleteFromFS(String internalPath){
-		deleteFromFS(getFileSystemPath(fsPath));
+		deleteFromFS(getFileSystemPath(internalPath));
 	}
 
 	public static String locateParentFolder(Path p){
