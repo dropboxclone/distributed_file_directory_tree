@@ -50,10 +50,12 @@ public class Main{
 	};
 	public static void main(String[] args) throws IOException{
 		Folder root = new Folder(".",".");
-		copyFolder(root);
+		//copyFolder(root);
+		Folder.loadFolderFromInternalToFS(Paths.get("."),".");
 		System.out.println("Copied root directory! Root : \n" + root);
 		//Folder.syncFolder(".",".");
-		Folder.syncFolderWinSafe(Paths.get("."));
+		//Folder.syncFolderWinSafe(Paths.get("."));
+		Folder.loadFolderFromFSToInternalAndNotify(".");
 		System.out.println("Synced with file directory root! Root : \n" + root);
 
 		

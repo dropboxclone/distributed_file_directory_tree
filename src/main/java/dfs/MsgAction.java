@@ -110,6 +110,8 @@ public class MsgAction implements MessageListener<Action>{
 			Folder.deleteFolderFromFS(internalPath);
 		} else if(act.getAction().equals("delete_entry")) {
 			Folder.deleteFromFS(internalPath);
+		} else if(act.getAction().equals("create_empty_folder")) {
+			Folder.createEmptyFolderInFS(internalPath);
 		} else{
 			//TODO
 	 		System.err.println("[MsgAction] unexpected action="+act);

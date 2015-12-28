@@ -98,9 +98,13 @@ public class WatchDir implements Runnable{
                 topic.publish(act);
             }
             else{
-                //TODO change the internal map
-                Folder.loadFolderFromFSToInternal(dir);
-                topic.publish(new Action("create_folder",Folder.getInternalPath(dir)));
+                if(Folder.isEmptyFSFolder(dir)) {
+                    Folder.createEmptyFolderInInternal(dir);
+                    topic.publish(new Action("create_empty_folder",Folder.getInternalPath(dir)));
+                } else {
+                    Folder.loadFolderFromFSToInternal(dir);
+                    topic.publish(new Action("create_folder",Folder.getInternalPath(dir)));
+                }
             }
         }
         else if(kind == ENTRY_DELETE){
@@ -115,8 +119,13 @@ public class WatchDir implements Runnable{
                 topic.publish(new Action("edit_file",Folder.getInternalPath(dir)));
             }
             else{
-                Folder.loadFolderFromFSToInternal(dir);
-                topic.publish(new Action("edit_folder",Folder.getInternalPath(dir)));
+                if(Folder.isEmptyFSFolder(dir)) {
+                    Folder.createEmptyFolderInInternal(dir);
+                    topic.publish(new Action("create_empty_folder",Folder.getInternalPath(dir)));
+                } else {
+                    Folder.loadFolderFromFSToInternal(dir);
+                    topic.publish(new Action("edit_folder",Folder.getInternalPath(dir)));
+                }
             }
         }
         else{

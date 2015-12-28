@@ -171,6 +171,7 @@ public class Folder implements FileOrFolder{
 				} catch(Exception e){
 					System.err.println("Exception " + e + " occured in dfs.Folder.loadFileFromFSToInternal");
 					System.err.println("Inputs: fsPath="+fsPath+", internalParentPath="+internalParentPath+",internalFileName="+internalFileName);
+					e.printStackTrace();
 				}
 			}
 		}
@@ -205,6 +206,19 @@ public class Folder implements FileOrFolder{
 		return contents;
 	};
 
+	//utility
+	public static boolean isEmptyFSFolder(Path fsPath){
+		try(DirectoryStream<Path> dirStream = Files.newDirectoryStream(fsPath)) {
+    		return !dirStream.iterator().hasNext();
+    	}
+    	catch(Exception e){
+    		System.err.println("Exception " + e + " occured in dfs.Folder.isEmptyFSFolder");
+			System.err.println("Inputs: fsPath="+fsPath);
+			e.printStackTrace();
+    	}
+    	return false;
+	};
+
 	//To use
 	public static void loadFileFromInternalToFS(Path fsPath, String internalParentPath, String internalFileName){
 		try{
@@ -223,6 +237,8 @@ public class Folder implements FileOrFolder{
 			System.err.println("Exception " + e + " occured in dfs.Folder.loadFileFromInternalToFS");
 			System.err.println("Inputs: fsPath="+fsPath+", internalParentPath="+internalParentPath+",internalFileName="+internalFileName);
 			e.printStackTrace();
+			//System.err.println("Throwing back exception to calling function...");
+			//throw e;
 		}
 	};
 
@@ -262,12 +278,12 @@ public class Folder implements FileOrFolder{
 	        			loadFileFromFSToInternal(
 	        				content,
 	        				internalFolderPath,
-	        				internalFolderPath+"/"+content.getFileName().toString());
+	        				content.getFileName().toString());
 	        		else
 	        			loadFolderFromFSToInternal(
 	        				content,
 	        				internalFolderPath,
-	        				internalFolderPath+"/"+content.getFileName().toString());
+	        				content.getFileName().toString());
 	        	}
 	        }
     	} catch (Exception e) {
@@ -320,7 +336,7 @@ public class Folder implements FileOrFolder{
 	//To use
 	public static void loadFolderFromInternalToFS(String internalFolderPath){
 		loadFolderFromInternalToFS(getFileSystemPath(internalFolderPath),internalFolderPath);
-	}
+	};
 
 	//To use
 	public static void loadFolderFromInternalToFS(Path fsPath){
@@ -427,6 +443,37 @@ public class Folder implements FileOrFolder{
 		deleteFromFS(getFileSystemPath(internalPath));
 	}
 
+	public static void createEmptyFolderInFS(Path fsPath){
+		try{
+			if(Files.exists(fsPath)) return;
+			Files.createDirectory(fsPath);
+		} catch(Exception e){
+			System.err.println("Exception " + e + " occured in dfs.Folder.createEmptyFolderInFS");
+			System.err.println("Inputs: fsPath="+fsPath);
+			e.printStackTrace();
+		}
+	};
+
+	public static void createEmptyFolderInFS(String internalPath){
+		createEmptyFolderInFS(getFileSystemPath(internalPath));
+	};
+
+	public static void createEmptyFolderInInternal(String internalParentPath, String internalName){
+		instance.getMap(internalParentPath).put(
+			internalName,
+			new Folder(internalName,internalParentPath+"/"+internalName)
+		);
+	};
+
+	public static void createEmptyFolderInInternal(String internalPath){
+		String[] internalParentPathAndName =  getInternalParentPathAndName(internalPath);
+		createEmptyFolderInInternal(internalParentPathAndName[0],internalParentPathAndName[1]);
+	};
+
+	public static void createEmptyFolderInInternal(Path fsPath){
+		createEmptyFolderInInternal(getInternalPath(fsPath));
+	};
+
 	public static String locateParentFolder(Path p){
 		java.io.File fileObj = p.toFile();
 		java.io.File root = new java.io.File(".");
@@ -458,7 +505,121 @@ public class Folder implements FileOrFolder{
 
 	public static String getInternalPath(Path fileSystemPath){
 		return locateParentFolder(fileSystemPath) + "/" + fileSystemPath.toFile().getName();
-	}
+	};
+
+
+    // public static void loadFileFromInternalToFSAndNotify(String internalParentPath, String internalFileName){
+    //     Path fsPath = Folder.getFileSystemPath(internalParentPath+"/"+internalFileName);
+    //     try{
+    //         if(
+    //             !Files.exists(fsPath) ||
+    //             !Arrays.equals(
+    //                 getContentsFromFS(fsPath),
+    //                 ((File) instance.getMap(internalParentPath).get(internalFileName)).getContents()
+    //             )
+    //         ) {
+    //             Files.write(fsPath,
+    //                 ((File) instance.getMap(internalParentPath).get(internalFileName)).getContents()
+    //             );
+    //             instance.getTopic("Actions").publish( new Action("add_file",internalParentPath+"/"+internalFileName) );
+    //         }
+    //     } catch(Exception e){
+    //         System.err.println("Exception " + e + " occured in dfs.Folder.loadFileFromInternalToFSAndNotify");
+    //         System.err.println("Inputs: internalParentPath="+internalParentPath+",internalFileName="+internalFileName);
+    //         e.printStackTrace();
+    //     }
+    // };
+
+
+    // public static void loadFolderFromInternalToFSAndNotify(String internalFolderPath){
+    //     Path fsPath = Folder.getFileSystemPath(internalFolderPath);
+    //     try{
+    //         if(!Files.exists(fsPath)) {
+    //             Files.createDirectory(fsPath);
+    //             instance.getTopic("Actions").publish(new Action("create_empty_folder",internalFolderPath));
+    //         }
+    //         Map<String,FileOrFolder> contents = instance.getMap(internalFolderPath);
+    //         for(String contentName : contents.keySet()){
+    //             if(contents.get(contentName) instanceof File) {
+    //                 loadFileFromInternalToFSAndNotify(internalFolderPath,contentName);
+    //             } else {
+    //                 loadFolderFromInternalToFSAndNotify(internalFolderPath+"/"+contentName);
+    //             }
+    //         }
+    //     } catch(Exception e) {
+    //         System.err.println("Exception " + e + " occured in dfs.Folder.loadFolderFromInternalToFSAndNotify");
+    //         System.err.println("Inputs: internalFolderPath="+internalFolderPath);
+    //         e.printStackTrace();
+    //     }
+    // };
+
+	public static void loadFileFromFSToInternalAndNotify(String internalParentPath, String internalFileName){
+		Path fsPath = getFileSystemPath(internalParentPath+"/"+internalFileName);
+		InputStream fis = null;
+		try{
+			fis = Files.newInputStream(fsPath);
+			byte[] internalFileContents = IOUtils.toByteArray(fis);
+			if(
+				!isPresentInInternal(internalParentPath,internalFileName) || 
+				!Arrays.equals(
+					internalFileContents,
+					((File) instance.getMap(internalParentPath).get(internalFileName)).getContents()
+				)
+			) {
+				instance.getMap(internalParentPath).put(internalFileName,
+					new File(internalFileName,internalParentPath+"/"+internalFileName,internalFileContents)
+				);
+				instance.getTopic("Actions").publish( new Action("add_file",internalParentPath+"/"+internalFileName) );
+			}
+		} catch(Exception e){
+			System.err.println("Exception " + e + " occured in dfs.Folder.loadFileFromFSToInternalAndNotify");
+			System.err.println("Inputs: internalParentPath="+internalParentPath+",internalFileName="+internalFileName);
+			e.printStackTrace();
+		} finally{
+			if(fis != null){
+				try{
+					fis.close();
+				} catch(Exception e){
+					System.err.println("Exception " + e + " occured in dfs.Folder.loadFileFromFSToInternalAndNotify");
+					System.err.println("Inputs: internalParentPath="+internalParentPath+",internalFileName="+internalFileName);
+					e.printStackTrace();
+				}
+			}
+		}
+	};
+
+	public static void loadFolderFromFSToInternalAndNotify(String internalFolderPath){
+		Path fsPath = getFileSystemPath(internalFolderPath);
+		try{
+			if(internalFolderPath != "."){
+				String[] internalParentPathAndName = getInternalParentPathAndName(internalFolderPath);
+				String internalParentPath = internalParentPathAndName[0];
+				String internalFolderName = internalParentPathAndName[1];
+				if(!instance.getMap(internalParentPath).containsKey(internalFolderName)){
+					instance.getMap(internalParentPath).put(internalFolderName,
+						new Folder(internalFolderName,internalFolderPath)
+					);
+					instance.getTopic("Actions").publish(new Action("create_empty_folder",internalFolderPath));
+				}
+			}	
+			try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(fsPath)){
+	        	for(Path content: dirStream){
+	        		if(!Files.isDirectory(content))
+	        			loadFileFromFSToInternalAndNotify(
+	        				internalFolderPath,
+	        				content.getFileName().toString());
+	        		else
+	        			loadFolderFromFSToInternalAndNotify(
+	        				internalFolderPath+"/"+content.getFileName().toString());
+	        	}
+	        }
+    	} catch (Exception e) {
+    		System.err.println("Exception " + e + " occured in dfs.Folder.loadFolderFromFSToInternalAndNotify");
+			System.err.println("Inputs: internalFolderPath="+internalFolderPath);
+			e.printStackTrace();
+    	}
+	};
+
 
 	public static void getFileFromDiskToWinSafe(String path){
 		java.io.File fileObj = new java.io.File(path);
