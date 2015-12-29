@@ -1,23 +1,21 @@
-function fileToHtml(name,URI){
-	return "<li><a href='"+URI+"'>"+name+"</a>"+"</li>";
+function fileToHtml(name,fsPath,parentID){
+	document.getElementById(parentID).innerHTML += "<li><a href='"+fsPath+"'>"+name+"</a>"+"</li>";
 }
 
-function folderToHtml(name,Children){
-	var toReturn = "<li>"+name+"<ul>";
-	for (index = 0; index < Children.length; index++) {
-		var child = Children[index];	
+function folderToHtml(name,path,Children,parentID){
+	document.getElementById(parentID).innerHTML += '<li>'+name+'<ul id="'+path+'"></ul></li>';
+	for (var index = 0; index < Children.length; index++) {
+		var child = Children[index];
 		if(child.type == "file"){
-			toReturn += fileToHtml(child.name,child.URI);
+			fileToHtml(child.name,child.fsPath,path);
 		}
 		else{
-			toReturn += folderToHtml(child.name,child.children);
+			folderToHtml(child.name,child.path,child.children,path);
 		}
 	}
-	toReturn += "</ul></li>";
-	return toReturn; 
 }
 
 var filesListAPI = "http://"+location.hostname+":"+location.port+"/files";
 $.getJSON(filesListAPI,function(root){
-	$('#filesList').html(folderToHtml(root.name,root.children));
+	folderToHtml(root.name,root.path,root.children,"filesList");
 });

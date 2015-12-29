@@ -38,7 +38,8 @@ public class File implements FileOrFolder{
 		jobj.put("type","file");
 		jobj.put("name",name);
 		jobj.put("path",path);
-		jobj.put("URI",Folder.getFileSystemPath(path).normalize().toUri());
+		//jobj.put("URI",Folder.getFileSystemPath(path).normalize().toUri());
+		jobj.put("fsPath",Folder.getFileSystemPath(path).toString());
 		return jobj;
 	}
 	public String toString(){

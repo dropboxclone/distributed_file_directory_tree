@@ -64,6 +64,7 @@ public class Main{
 		System.out.println("[Main] Initializing Directory Watching");
 		root.initiateDirectoryWatching();
 
+		Spark.externalStaticFileLocation(".");
 		Spark.staticFileLocation("public");
 		Spark.get("/files",(req,res)->{
 			res.type("application/json");
