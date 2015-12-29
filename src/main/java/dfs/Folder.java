@@ -1,6 +1,7 @@
 package dfs;
 
 import org.json.JSONObject;
+import org.json.JSONArray;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.config.Config;
@@ -56,6 +57,7 @@ public class Folder implements FileOrFolder{
 		jobj.put("type","folder");
 		jobj.put("name",name);
 		jobj.put("path",path);
+		jobj.put("children",new JSONArray());
 		//TODO: put locking
 		Map<String,FileOrFolder> contents = instance.getMap(path);
 		for (FileOrFolder subFileOrFolder : contents.values()) {

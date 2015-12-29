@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.io.IOException;
 
+import spark.Spark;
+
 public class Main{
 	public static void copyFolder(Folder f) throws IOException{
 		for(FileOrFolder sub : f.getContents().values()){
@@ -61,5 +63,11 @@ public class Main{
 		
 		System.out.println("[Main] Initializing Directory Watching");
 		root.initiateDirectoryWatching();
+
+		Spark.staticFileLocation("public");
+		Spark.get("/files",(req,res)->{
+			res.type("application/json");
+			return root.toJSON();
+		});
 	}
 }
