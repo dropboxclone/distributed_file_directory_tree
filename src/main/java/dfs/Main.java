@@ -11,6 +11,11 @@ import java.util.Scanner;
 import java.io.IOException;
 
 import spark.Spark;
+import javax.servlet.MultipartConfigElement;
+import javax.servlet.http.Part;
+import org.apache.commons.io.IOUtils;
+import java.nio.charset.StandardCharsets;
+
 
 public class Main{
 	public static void copyFolder(Folder f) throws IOException{
@@ -50,6 +55,23 @@ public class Main{
 			}
 		}
 	};
+
+	//debug
+	public static void printPart(Part p) throws IOException{
+		System.out.println("[printPart] printing part " + p + "{");
+		System.out.println("contentType="+p.getContentType());
+		System.out.println("Header Names="+p.getHeaderNames());
+		for(String hn : p.getHeaderNames()){
+			System.out.println("header " + hn + "=" + p.getHeader(hn) + "; " + p.getHeaders(hn));
+		}
+		System.out.println("name="+p.getName());
+		System.out.println("size="+p.getSize());
+		System.out.println("submitted file name="+p.getSubmittedFileName());
+		System.out.println("Data:\n"+IOUtils.toString(p.getInputStream(), StandardCharsets.UTF_8));
+		System.out.println("}");
+	};
+
+
 	public static void main(String[] args) throws IOException{
 		Folder root = new Folder(".",".");
 		//copyFolder(root);
@@ -69,6 +91,25 @@ public class Main{
 		Spark.get("/files",(req,res)->{
 			res.type("application/json");
 			return root.toJSON();
+		});
+		Spark.post("/upload",(req,res)->{
+			if (req.raw().getAttribute("org.eclipse.jetty.multipartConfig") == null) {
+ 				MultipartConfigElement multipartConfigElement = new MultipartConfigElement(System.getProperty("java.io.tmpdir"));
+				req.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
+			}
+			Part file = req.raw().getPart("file");
+			Part name = req.raw().getPart("name");
+			String filename = file.getSubmittedFileName();
+			if(name.getSize() > 0){
+				try{
+					filename = IOUtils.toString(name.getInputStream(), StandardCharsets.UTF_8);
+				} catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+			Path filePath = Paths.get(".",filename);
+			Files.copy(file.getInputStream(),filePath);
+			return "Done!";
 		});
 	}
 }
