@@ -99,6 +99,7 @@ public class MsgAction implements MessageListener<Action>{
 	public void onMessage(Message<Action> msg){
 		Action act = msg.getMessageObject();
 		String internalPath = act.getPath();
+		Folder.dontWatch.add(internalPath);
 		System.out.println("[MsgAction] INFO : Received Action="+act);
 		if(act.getAction().equals("add_file") || act.getAction().equals("edit_file")) {
 			Folder.loadFileFromInternalToFS(internalPath);
