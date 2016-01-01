@@ -181,8 +181,12 @@ public class WatchDir implements Runnable{
                     }
                 }
 
-                if(!Folder.dontWatch.remove(Folder.getInternalPath(dir)))
+                if(!Folder.dontWatch.contains(Folder.getInternalPath(child))){
+                    System.out.println("WatchDir INFO: path="+child+ ", internal=" + Folder.getInternalPath(child) + " is NOT in don't watch list. Forwarding it to other peers."); //DEBUG
                     forwardToItopic(kind,child);
+                } else {
+                    System.out.println("WatchDir INFO: path="+child+ ", internal=" + Folder.getInternalPath(child) + " IS in the don't watch list. NOT forwarding."); //DEBUG
+                }
 
             }
 
