@@ -96,10 +96,20 @@ public class MsgAction implements MessageListener<Action>{
 	// 	}
 	// }
 
+	public static String memberInfoToString(Member m){
+		return "Member{"+m+",isLocalMember="+m.localMember()+",attributes="+m.getAttributes()+"}";
+	};
+
 	public void onMessage(Message<Action> msg){
 		Action act = msg.getMessageObject();
+		System.out.println("[MsgAction] INFO : Received Action="+act + ", from " + memberInfoToString(msg.getPublishingMember()));
+		if(msg.getPublishingMember().localMember()){
+			System.out.println("Self msg : ignored"); //DEBUG
+			return;
+		}
 		String internalPath = act.getPath();
-		System.out.println("[MsgAction] INFO : Received Action="+act);
+		Folder.dontWatch.add(internalPath);
+		System.out.println("MsgAction INFO: Added "+internalPath+" to don't watch list."); //DEBUG
 		if(act.getAction().equals("add_file") || act.getAction().equals("edit_file")) {
 			Folder.loadFileFromInternalToFS(internalPath);
 		} else if (act.getAction().equals("delete_file")) {
@@ -116,5 +126,7 @@ public class MsgAction implements MessageListener<Action>{
 			//TODO
 	 		System.err.println("[MsgAction] unexpected action="+act);
 		}
+		Folder.dontWatch.remove(internalPath);
+		System.out.println("MsgAction INFO: Removed "+internalPath+" from don't watch list."); //DEBUG
 	}
 }
