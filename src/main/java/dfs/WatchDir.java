@@ -7,6 +7,7 @@ import java.nio.file.attribute.*;
 import java.io.*;
 import java.util.*;
 
+
 import com.hazelcast.config.Config;
 import com.hazelcast.core.*;
 
@@ -78,6 +79,7 @@ public class WatchDir implements Runnable{
 
         // enable trace after initial registration
         this.trace = true;
+
     }
 
     WatchDir(Path dir, ITopic<Action> t) throws IOException{
@@ -179,7 +181,12 @@ public class WatchDir implements Runnable{
                     }
                 }
 
-                forwardToItopic(kind,child);
+                if(!Folder.dontWatch.contains(Folder.getInternalPath(child))){
+                    System.out.println("WatchDir INFO: path="+child+ ", internal=" + Folder.getInternalPath(child) + " is NOT in don't watch list. Forwarding it to other peers."); //DEBUG
+                    forwardToItopic(kind,child);
+                } else {
+                    System.out.println("WatchDir INFO: path="+child+ ", internal=" + Folder.getInternalPath(child) + " IS in the don't watch list. NOT forwarding."); //DEBUG
+                }
 
             }
 

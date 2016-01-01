@@ -14,6 +14,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
 
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
@@ -31,6 +33,8 @@ public class Folder implements FileOrFolder{
 	String name;
 	String path;
 	final static HazelcastInstance instance = Hazelcast.newHazelcastInstance(new Config());
+	public static Set<String> dontWatch = Collections.newSetFromMap(new ConcurrentHashMap<String,Boolean>());
+
 	//Map<String,FileOrFolder> contents;
 
 	//ITopic<Action> actions;
