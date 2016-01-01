@@ -4,6 +4,7 @@ Simple tool to share and sync files across machines (similar to dropbox).
 ##Usage
 * Build the fat jar using `./gradlew shadowJar` (it is created in build/libs) or download the latest version from [releases section](https://github.com/dropboxclone/dropboxclone/releases).
 * Run the jar from the directory that you to share or get shared files/folders. E.g. `java -jar ~/dropboxclone/build/libs/dropboxclone-all.jar`. This directory will be shared across all instances of the program.
+* **Web Interface** Access the web-interface by opening `localhost:4567` from a web browser (will work only from the machine running the program), OR open `<IP address of machine running>:4567` from any device.
 
 ##TODO
 ###Important
