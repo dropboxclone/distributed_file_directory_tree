@@ -111,14 +111,16 @@ public class Main{
 			return "Done!"; //TODO return JSON informing actions taken/not taken
 		});
 		Spark.get("/delete",(req,res)->{
-			if(req.queryParamsValues("dd") != null){
-				for(String dirIntPath: req.queryParamsValues("dd")){
-					Folder.deleteFolderFromFS(dirIntPath);
-				}
-			}
 			if(req.queryParamsValues("df") != null){
 				for(String fileIntPath: req.queryParamsValues("df")){
+					System.out.println("Spark INFO: Request to DELETE file:"+fileIntPath);
 					Folder.deleteFileFromFS(fileIntPath);
+				}
+			}
+			if(req.queryParamsValues("dd") != null){
+				for(String dirIntPath: req.queryParamsValues("dd")){
+					System.out.println("Spark INFO: Request to DELETE directory:"+dirIntPath);
+					Folder.deleteFolderFromFS(dirIntPath);
 				}
 			}
 			return "Done!"; //TODO return JSON informing actions taken/not taken

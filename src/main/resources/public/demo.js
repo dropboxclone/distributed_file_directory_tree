@@ -1,12 +1,12 @@
-function fileToHtml(name,fsPath,parentID){
+function fileToHtml(name,intPath,fsPath,parentID){
 	var fileElement = document.createElement('li');
-	fileElement.id = fsPath;
+	fileElement.id = intPath;
 	fileElement.className = "file";
 	var fileElementLink = document.createElement('a');
-	fileElementLink.id = "URI:"+fsPath;
+	fileElementLink.id = "URI:"+intPath;
 	fileElementLink.href = fsPath;
 	var fileElementName = document.createElement('div');
-	fileElementName.id = "name:"+fsPath;
+	fileElementName.id = "name:"+intPath;
 	fileElementName.innerHTML = name;
 	fileElementLink.appendChild(fileElementName);
 	fileElement.appendChild(fileElementLink);
@@ -28,7 +28,7 @@ function folderToHtml(name,path,Children,parentID){
 	for (var index = 0; index < Children.length; index++) {
 		var child = Children[index];
 		if(child.type == "file"){
-			fileToHtml(child.name,child.fsPath,"children:"+path);
+			fileToHtml(child.name,child.path,child.fsPath,"children:"+path);
 		}
 		else{
 			folderToHtml(child.name,child.path,child.children,"children:"+path);
