@@ -71,7 +71,6 @@ public class Main{
 		System.out.println("}");
 	};
 
-
 	public static void main(String[] args) throws IOException{
 		Folder root = new Folder(".",".");
 		//copyFolder(root);
@@ -109,7 +108,20 @@ public class Main{
 			}
 			Path filePath = Paths.get(".",filename);
 			Files.copy(file.getInputStream(),filePath);
-			return "Done!";
+			return "Done!"; //TODO return JSON informing actions taken/not taken
+		});
+		Spark.get("/delete",(req,res)->{
+			if(req.queryParamsValues("dd") != null){
+				for(String dirIntPath: req.queryParamsValues("dd")){
+					Folder.deleteFolderFromFS(dirIntPath);
+				}
+			}
+			if(req.queryParamsValues("df") != null){
+				for(String fileIntPath: req.queryParamsValues("df")){
+					Folder.deleteFileFromFS(fileIntPath);
+				}
+			}
+			return "Done!"; //TODO return JSON informing actions taken/not taken
 		});
 	}
 }

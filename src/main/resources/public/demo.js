@@ -59,7 +59,10 @@ function handleFolderCheckboxClick(dirIntPath){
 	var childrenInputBoxes = document.getElementById('children:'+dirIntPath).getElementsByTagName('input');
 	for(var i=0; i<childrenInputBoxes.length; i++){
 		childrenInputBoxes[i].checked = element.checked;
-	};
+	}
+	if(dirIntPath == "."){
+		element.checked = false;
+	}
 };
 
 

@@ -22,5 +22,7 @@ Simple tool to share and sync files across machines (similar to dropbox).
 * Music streaming support in web-interface.
 
 ###Other
+* Refactor REST API to return JSON indicating action successful/failed.
+ - don't send form data directly in html. Pass it through JS and display visually the response.
 * Continuous integration support like [Travis CI](https://travis-ci.org/).
 * Consider deployment. Perhaps [Heroku](https://www.heroku.com/) or Google App Engine?
