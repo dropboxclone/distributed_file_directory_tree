@@ -15,10 +15,11 @@ Simple tool to share and sync files across machines (similar to dropbox).
 * Only send diffs over the network.
  - Use [JGit](https://github.com/eclipse/jgit) or some other kind of version control system.
 * Do not store files (especially large ones) in Hazelcast shared memory. Consider transferring files via sockets.
+* Optimize file list display javascript. Currently takes some time (0-5sec) to load the list.
 
 ###Features
 * Select path while uploading files in web-interface.
-* Delete files in web-interface.
+* ~~Delete files in web-interface.~~
 * Music streaming support in web-interface.
 
 ###Other

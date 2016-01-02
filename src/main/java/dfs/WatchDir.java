@@ -138,9 +138,11 @@ public class WatchDir implements Runnable{
     }
 
     //void processEvents() {
-    public void run(){   
+    public void run(){
+        System.out.println("WatchDir Thread INFO: priority="+Thread.currentThread().getPriority());  
         for (;;){
             // wait for key to be signalled
+            System.out.println("WatchDir INFO: restarting loop...acquiring new key");
             WatchKey key;
             try {
                 key = watcher.take();
@@ -184,9 +186,11 @@ public class WatchDir implements Runnable{
 
                 long t = System.currentTimeMillis();
                 if(!Folder.dontWatch.contains(Folder.getInternalPath(child))){
+                    Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
                     System.out.println("WatchDir#"+key+" INFO: path="+child+ ", internal=" + Folder.getInternalPath(child) + " is NOT in don't watch list. Forwarding it to other peers. @"+Main.timeToString(t)); //DEBUG
                     forwardToItopic(kind,child);
                 } else {
+                    Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
                     System.out.println("WatchDir#"+key+" INFO: path="+child+ ", internal=" + Folder.getInternalPath(child) + " IS in the don't watch list. NOT forwarding. @"+Main.timeToString(t)); //DEBUG
                     // try{
                     //     Thread.sleep(minDelayBtwnWatchEvents);
