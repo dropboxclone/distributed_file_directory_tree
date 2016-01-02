@@ -16,8 +16,18 @@ import javax.servlet.http.Part;
 import org.apache.commons.io.IOUtils;
 import java.nio.charset.StandardCharsets;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Main{
+	public static String timeToString(long t){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    	return sdf.format(new Date(t));
+	}
+	public static String timeToString(){
+		return timeToString(System.currentTimeMillis());
+	}
+
 	public static void copyFolder(Folder f) throws IOException{
 		for(FileOrFolder sub : f.getContents().values()){
 			if(sub instanceof File){

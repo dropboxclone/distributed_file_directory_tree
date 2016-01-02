@@ -17,6 +17,7 @@ public class WatchDir implements Runnable{
     private final Map<WatchKey,Path> keys;
     private final boolean recursive;
     private boolean trace = false;
+    // private static long minDelayBtwnWatchEvents = 10;
 
     private static ITopic<Action> topic;
 
@@ -181,11 +182,18 @@ public class WatchDir implements Runnable{
                     }
                 }
 
+                long t = System.currentTimeMillis();
                 if(!Folder.dontWatch.contains(Folder.getInternalPath(child))){
-                    System.out.println("WatchDir INFO: path="+child+ ", internal=" + Folder.getInternalPath(child) + " is NOT in don't watch list. Forwarding it to other peers."); //DEBUG
+                    System.out.println("WatchDir#"+key+" INFO: path="+child+ ", internal=" + Folder.getInternalPath(child) + " is NOT in don't watch list. Forwarding it to other peers. @"+Main.timeToString(t)); //DEBUG
                     forwardToItopic(kind,child);
                 } else {
-                    System.out.println("WatchDir INFO: path="+child+ ", internal=" + Folder.getInternalPath(child) + " IS in the don't watch list. NOT forwarding."); //DEBUG
+                    System.out.println("WatchDir#"+key+" INFO: path="+child+ ", internal=" + Folder.getInternalPath(child) + " IS in the don't watch list. NOT forwarding. @"+Main.timeToString(t)); //DEBUG
+                    // try{
+                    //     Thread.sleep(minDelayBtwnWatchEvents);
+                    // } catch(InterruptedException ex) {
+                    //     System.err.println("Exception:"+ex+" while trying to sleep WatchDir thread");
+                    //     ex.printStackTrace();
+                    // }
                 }
 
             }

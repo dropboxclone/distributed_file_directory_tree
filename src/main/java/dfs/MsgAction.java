@@ -11,6 +11,10 @@ import java.nio.file.FileSystems;
 import com.hazelcast.core.*;
 
 import java.util.Map;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.nio.file.StandardCopyOption;
 
 public class MsgAction implements MessageListener<Action>{
@@ -28,6 +32,9 @@ public class MsgAction implements MessageListener<Action>{
 			f.delete();
 		}
 	}
+
+	public static Map<String,Timer> timers = new HashMap<String,Timer>();
+	public static ConcurrentHashMap<String,Boolean> hasTimerStarted = new  ConcurrentHashMap<String,Boolean>();
 
 	// public void onMessage(Message<Action> msg){
 	// 	Action act = msg.getMessageObject();
@@ -101,15 +108,24 @@ public class MsgAction implements MessageListener<Action>{
 	};
 
 	public void onMessage(Message<Action> msg){
+		long inTime = System.currentTimeMillis();
 		Action act = msg.getMessageObject();
-		System.out.println("[MsgAction] INFO : Received Action="+act + ", from " + memberInfoToString(msg.getPublishingMember()));
+		System.out.println("[MsgAction]#"+msg.hashCode()+" INFO : Received Action="+act + ", from " + memberInfoToString(msg.getPublishingMember()) + " @"+Main.timeToString(inTime));
 		if(msg.getPublishingMember().localMember()){
 			System.out.println("Self msg : ignored"); //DEBUG
 			return;
 		}
 		String internalPath = act.getPath();
 		Folder.dontWatch.add(internalPath);
-		System.out.println("MsgAction INFO: Added "+internalPath+" to don't watch list."); //DEBUG
+		Timer prevTimer = timers.get(internalPath);
+		if(prevTimer != null){
+			prevTimer.cancel();
+			timers.remove(internalPath);
+		}
+		if(hasTimerStarted.get(internalPath)==Boolean.TRUE){
+			while(hasTimerStarted.get(internalPath)==Boolean.TRUE);
+		}
+		System.out.println("MsgAction#"+msg.hashCode()+" INFO: Added "+internalPath+" to don't watch list."); //DEBUG
 		if(act.getAction().equals("add_file") || act.getAction().equals("edit_file")) {
 			Folder.loadFileFromInternalToFS(internalPath);
 		} else if (act.getAction().equals("delete_file")) {
@@ -126,7 +142,18 @@ public class MsgAction implements MessageListener<Action>{
 			//TODO
 	 		System.err.println("[MsgAction] unexpected action="+act);
 		}
-		Folder.dontWatch.remove(internalPath);
-		System.out.println("MsgAction INFO: Removed "+internalPath+" from don't watch list."); //DEBUG
+		Timer timerToRemoveIntPath = new Timer();
+		timers.put(internalPath,timerToRemoveIntPath);
+		hasTimerStarted.put(internalPath,false);
+		timerToRemoveIntPath.schedule(new TimerTask(){
+			@Override
+			public void run(){
+				hasTimerStarted.put(internalPath,true);
+				Folder.dontWatch.remove(internalPath);
+				long outTime = System.currentTimeMillis();
+				System.out.println("MsgAction#"+msg.hashCode()+" INFO: Removed "+internalPath+" from don't watch list @"+Main.timeToString(outTime)); //DEBUG
+				hasTimerStarted.remove(internalPath,true);
+			}
+		},50);
 	}
 }
