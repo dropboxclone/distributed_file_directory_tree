@@ -6,16 +6,21 @@
     <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
 </head>
 <body>
-    <h1>Dropbox Clone</h1>
-    <div id="filesListDiv">
-        <h2>Shared Files</h2>
-        <p id="filesListPar">
-        	<ul id="filesList"></ul>
-        </p>
-    </div>
     <script src="demo.js"></script>
-    <div id="fileUploadDiv">
-        <a href='fileUpload.html'>Upload File</a>
+    <h1>Dropbox Clone</h1>
+    <div id="filesListContainerDiv">
+        <h2 id="actionTitle">Shared Files</h2>
+        <div id="filesListDiv">
+        	<ul id="filesList"></ul>
+        </div>
+    </div>
+    <div id="actionsContainer">
+        <div id="fileUploadDiv">
+            <a href='fileUpload.html'>Upload File</a>
+        </div>
+        <div id="fileDeleteDiv">
+            <button type="button" onclick="handleDeleteButtonClick()">Delete Files</button>
+        </div>
     </div>
 </body>
 </html>
