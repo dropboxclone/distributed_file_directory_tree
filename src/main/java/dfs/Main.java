@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.net.ServerSocket;
 
 public class Main{
 	public static String timeToString(long t){
@@ -81,6 +82,18 @@ public class Main{
 		System.out.println("}");
 	};
 
+	public static boolean isPortFree(int port){
+		boolean result;
+		try{
+			ServerSocket s = new ServerSocket(port);
+			s.close();
+			result = true;
+		} catch(Exception e) {
+			result = false;
+		}
+		return result;
+	}
+
 	public static void main(String[] args) throws IOException{
 		Folder root = new Folder(".",".");
 		//copyFolder(root);
@@ -95,45 +108,49 @@ public class Main{
 		System.out.println("[Main] Initializing Directory Watching");
 		root.initiateDirectoryWatching();
 
-		Spark.externalStaticFileLocation(".");
-		Spark.staticFileLocation("public");
-		Spark.get("/files",(req,res)->{
-			res.type("application/json");
-			return root.toJSON();
-		});
-		Spark.post("/upload",(req,res)->{
-			if (req.raw().getAttribute("org.eclipse.jetty.multipartConfig") == null) {
- 				MultipartConfigElement multipartConfigElement = new MultipartConfigElement(System.getProperty("java.io.tmpdir"));
-				req.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
-			}
-			Part file = req.raw().getPart("file");
-			Part name = req.raw().getPart("name");
-			String filename = file.getSubmittedFileName();
-			if(name.getSize() > 0){
-				try{
-					filename = IOUtils.toString(name.getInputStream(), StandardCharsets.UTF_8);
-				} catch(Exception e){
-					e.printStackTrace();
+			
+		if(isPortFree(4567)){
+			Spark.externalStaticFileLocation(".");
+			Spark.staticFileLocation("public");
+			Spark.get("/files",(req,res)->{
+				res.type("application/json");
+				return root.toJSON();
+			});
+			Spark.post("/upload",(req,res)->{
+				if (req.raw().getAttribute("org.eclipse.jetty.multipartConfig") == null) {
+	 				MultipartConfigElement multipartConfigElement = new MultipartConfigElement(System.getProperty("java.io.tmpdir"));
+					req.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
 				}
-			}
-			Path filePath = Paths.get(".",filename);
-			Files.copy(file.getInputStream(),filePath);
-			return "Done!"; //TODO return JSON informing actions taken/not taken
-		});
-		Spark.get("/delete",(req,res)->{
-			if(req.queryParamsValues("df") != null){
-				for(String fileIntPath: req.queryParamsValues("df")){
-					System.out.println("Spark INFO: Request to DELETE file:"+fileIntPath);
-					Folder.deleteFileFromFS(fileIntPath);
+				Part file = req.raw().getPart("file");
+				Part name = req.raw().getPart("name");
+				String filename = file.getSubmittedFileName();
+				if(name.getSize() > 0){
+					try{
+						filename = IOUtils.toString(name.getInputStream(), StandardCharsets.UTF_8);
+					} catch(Exception e){
+						e.printStackTrace();
+					}
 				}
-			}
-			if(req.queryParamsValues("dd") != null){
-				for(String dirIntPath: req.queryParamsValues("dd")){
-					System.out.println("Spark INFO: Request to DELETE directory:"+dirIntPath);
-					Folder.deleteFolderFromFS(dirIntPath);
+				Path filePath = Paths.get(".",filename);
+				Files.copy(file.getInputStream(),filePath);
+				return "Done!"; //TODO return JSON informing actions taken/not taken
+			});
+			Spark.get("/delete",(req,res)->{
+				if(req.queryParamsValues("df") != null){
+					for(String fileIntPath: req.queryParamsValues("df")){
+						System.out.println("Spark INFO: Request to DELETE file:"+fileIntPath);
+						Folder.deleteFileFromFS(fileIntPath);
+					}
 				}
-			}
-			return "Done!"; //TODO return JSON informing actions taken/not taken
-		});
+				if(req.queryParamsValues("dd") != null){
+					for(String dirIntPath: req.queryParamsValues("dd")){
+						System.out.println("Spark INFO: Request to DELETE directory:"+dirIntPath);
+						Folder.deleteFolderFromFS(dirIntPath);
+					}
+				}
+				return "Done!"; //TODO return JSON informing actions taken/not taken
+			});
+			System.out.println("Spark INFO : Started Server on port 4567");
+		}
 	}
 }
