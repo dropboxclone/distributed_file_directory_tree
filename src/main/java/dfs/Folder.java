@@ -62,7 +62,7 @@ public class Folder implements FileOrFolder{
 		jobj.put("name",name);
 		jobj.put("path",path);
 		//jobj.put("URI",Folder.getFileSystemPath(path).normalize().toUri());
-		jobj.put("fsPath",Folder.getFileSystemPath(path).toString());
+		jobj.put("fsPath",Paths.get(".").relativize(Folder.getFileSystemPath(path)).toString());
 		jobj.put("children",new JSONArray());
 		//TODO: put locking
 		Map<String,FileOrFolder> contents = instance.getMap(path);

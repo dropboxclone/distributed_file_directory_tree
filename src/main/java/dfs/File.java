@@ -6,6 +6,8 @@ import java.nio.file.FileSystems;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+import java.nio.file.Paths;
+
 public class File implements FileOrFolder{
 	String name;
 	String path;
@@ -39,7 +41,7 @@ public class File implements FileOrFolder{
 		jobj.put("name",name);
 		jobj.put("path",path);
 		//jobj.put("URI",Folder.getFileSystemPath(path).normalize().toUri());
-		jobj.put("fsPath",Folder.getFileSystemPath(path).toString());
+		jobj.put("fsPath",Paths.get(".").relativize(Folder.getFileSystemPath(path)).toString());
 		return jobj;
 	}
 	public String toString(){
