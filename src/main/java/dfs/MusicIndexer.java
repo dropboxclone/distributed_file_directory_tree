@@ -7,6 +7,8 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import com.mpatric.mp3agic.Mp3File;
 import com.mpatric.mp3agic.ID3v1;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 class MusicMetadata{
 	private String track;
@@ -18,6 +20,11 @@ class MusicMetadata{
 	private String genreDescription;
 	private String comment;
 	private String name;
+
+	public String getArtist(){return artist;}
+	public String getTitle(){return title;}
+	public String getName(){return name;}
+
 	private MusicMetadata(){
 		track = "";
 		artist = "";
@@ -50,6 +57,11 @@ class MusicMetadata{
 			e.printStackTrace();
 		}
 	}
+
+	public boolean contains(String str){
+		return artist.toLowerCase().contains(str.toLowerCase()) || title.toLowerCase().contains(str.toLowerCase()) || name.toLowerCase().contains(str.toLowerCase());
+	};
+
 	public String toString(){
 		return String.format("Mp3:%s{track=%s,artist=%s,title=%s,album=%s,year=%s,genre=%s,genreDescription=%s,comment=%s}",name,track,artist,title,album,year,genre,genreDescription,comment);
 	}
@@ -59,11 +71,13 @@ public class MusicIndexer extends Thread{
 	Folder rootDir;
 	Map<String,MusicMetadata> index;
 	Queue<Folder> pathToBeIndexed;
+	boolean pauseIndexing;
 
 	MusicIndexer(Folder r){
 		rootDir = r;
 		index = new ConcurrentHashMap<String,MusicMetadata>();
 		pathToBeIndexed = new ConcurrentLinkedQueue<Folder>();
+		pauseIndexing = false;
 		this.setPriority(Thread.MIN_PRIORITY);
 		this.setDaemon(true);
 	}
@@ -98,19 +112,42 @@ public class MusicIndexer extends Thread{
 		}
 	};
 
+	public JSONArray search(String searchQuery){
+		JSONArray toRet = new JSONArray();
+		pauseIndexing = true;
+		for(String intPath : index.keySet()){
+			if(Folder.fileExists(intPath)){
+				MusicMetadata meta = index.get(intPath);
+				if(meta.contains(searchQuery)){
+					JSONObject musicJSON = new JSONObject();
+					musicJSON.put("name",meta.getName());
+					musicJSON.put("path",intPath);
+					musicJSON.put("fsPath",Folder.getRelFileSystemPath(intPath));
+					musicJSON.put("artist",meta.getArtist());
+					musicJSON.put("title",meta.getTitle());
+					toRet.put(musicJSON);
+				}
+			}
+		}
+		pauseIndexing = false;
+		return toRet;
+	}
+
 	@Override
 	public void run(){
 		for(;;){
-			if(pathToBeIndexed.isEmpty())
-				pathToBeIndexed.add(rootDir);
-			Folder currentDir = pathToBeIndexed.poll();
-			if(currentDir != null){
-				index(currentDir);
-			}
-			try{
-				Thread.sleep(1000);
-			} catch(Exception e){
-				e.printStackTrace();
+			if(!pauseIndexing){
+				if(pathToBeIndexed.isEmpty())
+					pathToBeIndexed.add(rootDir);
+				Folder currentDir = pathToBeIndexed.poll();
+				if(currentDir != null){
+					index(currentDir);
+				}
+				try{
+					Thread.sleep(1000);
+				} catch(Exception e){
+					e.printStackTrace();
+				}
 			}
 		}
 	}

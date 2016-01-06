@@ -135,6 +135,19 @@ public class Folder implements FileOrFolder{
 		return parentPathAndName;
 	}
 
+	public static boolean fileExists(String internalPath){
+		String[] parentPathAndName = getInternalParentPathAndName(internalPath);
+		Map<String,FileOrFolder> parentContents = instance.getMap(parentPathAndName[0]);
+		if(!parentContents.containsKey(parentPathAndName[1])){
+			return false;
+		} else {
+			if(parentContents.get(parentPathAndName[1]) instanceof File)
+				return true;
+			else
+				return false;
+		}
+	};
+
 	//utility
 	/*
 	public static String getInternalPath(Path fsPath){
@@ -495,6 +508,11 @@ public class Folder implements FileOrFolder{
 			parentPath.append("/" + parentTrace.pop());
 		}
 		return parentPath.toString();
+	}
+
+	public static String getRelFileSystemPath(String internalPath){
+		Path fsPath = getFileSystemPath(internalPath);
+		return Paths.get(".").relativize(fsPath).toString();
 	}
 
 	public static Path getFileSystemPath(String internalPath){

@@ -152,6 +152,10 @@ public class Main{
 				}
 				return "Done!"; //TODO return JSON informing actions taken/not taken
 			});
+			Spark.get("/search/music",(req,res)->{
+				String searchQuery = req.queryParams("q");
+				return musicIndexService.search(searchQuery);
+			});
 			System.out.println("Spark INFO : Started Server on port 4567");
 		}
 	}
