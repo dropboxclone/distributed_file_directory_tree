@@ -28,4 +28,10 @@ Simple tool to share and sync files across machines (similar to dropbox).
 * Refactor REST API to return JSON indicating action successful/failed.
  - don't send form data directly in html. Pass it through JS and display visually the response.
 * Continuous integration support like [Travis CI](https://travis-ci.org/).
-* Consider deployment. Perhaps [Heroku](https://www.heroku.com/) or Google App Engine?
+* Consider deployment. Perhaps [Heroku](https://www.heroku.com/) or Google App Engine?  
+
+##Demo
+Please see demos of [v0.1.0](https://github.com/dropboxclone/dropboxclone/releases/tag/0.1.0) in the [demos page](https://github.com/dropboxclone/dropboxclone/wiki/Demo) in the [Wiki](https://github.com/dropboxclone/dropboxclone/wiki).
+
+##LogBook
+We have summarized our discussions in the [logbook page](https://github.com/dropboxclone/dropboxclone/wiki/Logbook). Future discussion are also intended to documented there.
