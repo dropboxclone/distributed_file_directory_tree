@@ -35,6 +35,9 @@ public class File implements FileOrFolder{
 	}
 	public String getName(){ return name; }
 	public String getPath(){ return path; }
+	public String getRelFileSystemPath(){
+		return Paths.get(".").relativize(Folder.getFileSystemPath(path)).toString();
+	}
 	public JSONObject toJSON(){
 		JSONObject jobj = new JSONObject();
 		jobj.put("type","file");

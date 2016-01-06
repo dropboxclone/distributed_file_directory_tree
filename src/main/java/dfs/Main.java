@@ -108,6 +108,8 @@ public class Main{
 		System.out.println("[Main] Initializing Directory Watching");
 		root.initiateDirectoryWatching();
 
+		MusicIndexer musicIndexService = new MusicIndexer(root);
+		musicIndexService.start();
 			
 		if(isPortFree(4567)){
 			Spark.externalStaticFileLocation(".");
