@@ -57,36 +57,42 @@ class MusicMetadata{
 
 public class MusicIndexer extends Thread{
 	Folder rootDir;
-	Map<File,MusicMetadata> index;
+	Map<String,MusicMetadata> index;
 	Queue<Folder> pathToBeIndexed;
 
 	MusicIndexer(Folder r){
 		rootDir = r;
-		index = new ConcurrentHashMap<File,MusicMetadata>();
+		index = new ConcurrentHashMap<String,MusicMetadata>();
 		pathToBeIndexed = new ConcurrentLinkedQueue<Folder>();
 		this.setPriority(Thread.MIN_PRIORITY);
+		this.setDaemon(true);
 	}
 
 	private static boolean isMusic(File f){
-		return FilenameUtils.getExtension(f.getName()) == "mp3";
+		return FilenameUtils.getExtension(f.getName()).equals("mp3");
 	}
 
 	private static boolean isMusic(String fname){
-		return FilenameUtils.getExtension(fname) == "mp3";
+		return FilenameUtils.getExtension(fname).equals("mp3");
 	}
 
 	private void updateIndex(File f){
-		index.put(f,new MusicMetadata(f));
+		index.put(f.getPath(),new MusicMetadata(f));
 	};
 
 	private void index(Folder dir){
+		//System.out.println("MusicIndexer INFO: Examining directory="+dir.getPath()); //debug
 		for(FileOrFolder content : dir.getContents().values()){
+			if(Folder.dontWatch.contains(content.getPath()))
+				break;
 			if(content instanceof File){
+				//System.out.println("MusicIndexer INFO: Found content="+content.getName()+", path="+content.getPath()+",extension="+FilenameUtils.getExtension(content.getName())+",isMusic="+isMusic((File) content));
 				if(isMusic((File) content)){
 					updateIndex((File) content);
-					System.out.println("MusicIndexer INFO: Indexing path="+content.getPath()+", name=content.getName()\nMetadata="+index.get((File) content)); //debug
+					System.out.println("MusicIndexer INFO: Indexing path="+content.getPath()+", name="+content.getName()+"\nMetadata="+index.get(content.getPath())); //debug
 				}
 			} else {
+				//System.out.println("MusicIndexer INFO: Adding directory="+content.getPath()+" to the queue"); //debug
 				pathToBeIndexed.add((Folder) content);
 			}
 		}
@@ -100,6 +106,11 @@ public class MusicIndexer extends Thread{
 			Folder currentDir = pathToBeIndexed.poll();
 			if(currentDir != null){
 				index(currentDir);
+			}
+			try{
+				Thread.sleep(1000);
+			} catch(Exception e){
+				e.printStackTrace();
 			}
 		}
 	}
